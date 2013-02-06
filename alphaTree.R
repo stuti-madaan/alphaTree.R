@@ -116,9 +116,9 @@ grow.atree <- function(X, y, alpha, depth){
 			if(is.na(feature)){ # No splitting variable
 				pid.lst.tmp[sub.idx] <- pid.new;
 				rules.tmp <- rbind(rules.tmp, 
-									data.frame(pid=pid.new, 
-									rule=rules[pid.old,"rule"],
-									pred=rules[pid.old,"pred"]));
+							data.frame(pid=pid.new, 
+							rule=rules[pid.old,"rule"],
+							pred=rules[pid.old,"pred"]));
 				pid.new <- pid.new + 1;				
 			}else{
 				r.var <- as.character(colnames(X)[feature]);
