@@ -13,7 +13,7 @@ alpha.div <- function(c1, c2, alpha){
 
 alpha.gain <- function(x, y, alpha, y.lst){
 	
-	smoother <- 1;
+	smoother <- 1e-5;
 	max.gain <- -Inf;
 	max.value <- NA;
 	x.lst <- unique(x);
@@ -31,9 +31,9 @@ alpha.gain <- function(x, y, alpha, y.lst){
 		n.y <- length(y);
 		n.y.left <- length(y.left);
 		n.y.right <- length(y.right);
-		n.pos <- sum(y==1);
+		n.pos <- sum(y==y.lst[1]);
 		n.pos.left <- sum(y.left==y.lst[1]);
-		n.pos.right <- sum(y.right==y.lst[2]);
+		n.pos.right <- sum(y.right==y.lst[1]);
 		node.0 <- c((n.y-n.pos),n.pos);
 		node.l <- c((n.y.left - n.pos.left),n.pos.left);
 		node.r <- c((n.y.right - n.pos.right),n.pos.right);
@@ -95,7 +95,7 @@ grow.atree <- function(X, y, alpha, depth){
 	N <- length(y); # a total number of data samples
 	pid.lst <- rep(1,N); # a list of partition indeces
 	rules <- data.frame(pid=1,rule="",pred=0.0);
-	y.lst <- sort(unique(y));
+	y.lst <- sort(unique(y),decreasing=TRUE);
 
 	for(d in 1:depth){
 
@@ -116,9 +116,9 @@ grow.atree <- function(X, y, alpha, depth){
 			if(is.na(feature)){ # No splitting variable
 				pid.lst.tmp[sub.idx] <- pid.new;
 				rules.tmp <- rbind(rules.tmp, 
-							data.frame(pid=pid.new, 
-							rule=rules[pid.old,"rule"],
-							pred=rules[pid.old,"pred"]));
+									data.frame(pid=pid.new, 
+									rule=rules[pid.old,"rule"],
+									pred=rules[pid.old,"pred"]));
 				pid.new <- pid.new + 1;				
 			}else{
 				r.var <- as.character(colnames(X)[feature]);
