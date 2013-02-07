@@ -1,11 +1,12 @@
 require(ggplot2);
-
+require(reshape);
 source("alphaTree.R");
 
 # generate synthetic data
-N <- 5000;
-synth <- data.frame(x.1 = rnorm(N,1,1),x.2 = rnorm(N,1,1), class="pos");
-synth <- rbind(synth,data.frame(x.1= rnorm(N,-1,1),x.2=rnorm(N,-1,1),class="neg"));
+P <- 1000;
+N <- 2000;
+synth <- data.frame(x.1 = rnorm(N,0,0.8),x.2 = rnorm(P,1,1), class="pos");
+synth <- rbind(synth,data.frame(x.1= rnorm(N,-1,2),x.2=rnorm(N,-1,2),class="neg"));
 X <- model.matrix(class~.,data=synth);
 y <- as.factor(synth[,"class"]);
 
@@ -16,11 +17,11 @@ ggsave("synthetic_data.png",width=4,height=3)
 
 #-----------------------------------------------------------------------------------
 # two alpha-trees with different alpha values
-model <- grow.atree(X,y,0,1);
+model <- grow.atree(X,y,0,1,F);
 pred.0 <- predict.atree(X,model$rules);
-model <- grow.atree(X,y,0.5,1);
+model <- grow.atree(X,y,0.5,1,F);
 pred.0.5 <- predict.atree(X,model$rules);
-model <- grow.atree(X,y,1,1);
+model <- grow.atree(X,y,1,1,F);
 pred.1 <- predict.atree(X,model$rules);
 # compare the results from different alpha values
 data <- data.frame(x.1=X[,2],x.2=X[,3],
@@ -35,11 +36,11 @@ ggsave("first_cut.png",width=6,height=3)
 
 #-----------------------------------------------------------------------------------
 # two alpha-trees with different alpha values
-model <- grow.atree(X,y,0,2);
+model <- grow.atree(X,y,0,2,F);
 pred.0 <- predict.atree(X,model$rules);
-model <- grow.atree(X,y,0.5,2);
+model <- grow.atree(X,y,0.5,2,F);
 pred.0.5 <- predict.atree(X,model$rules);
-model <- grow.atree(X,y,1,2);
+model <- grow.atree(X,y,1,2,F);
 pred.1 <- predict.atree(X,model$rules);
 # compare the results from different alpha values
 data <- data.frame(x.1=X[,2],x.2=X[,3],

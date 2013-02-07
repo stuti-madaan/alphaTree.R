@@ -90,12 +90,12 @@ class.ratio <- function(y, y.lst){
 	return(ratio)
 }
 
-grow.atree <- function(X, y, alpha, depth){
+grow.atree <- function(X, y, alpha, depth, c.order){
 
 	N <- length(y); # a total number of data samples
 	pid.lst <- rep(1,N); # a list of partition indeces
 	rules <- data.frame(pid=1,rule="",pred=0.0);
-	y.lst <- sort(unique(y),decreasing=TRUE);
+	y.lst <- sort(unique(y),decreasing=c.order);
 
 	for(d in 1:depth){
 
@@ -152,7 +152,7 @@ predict.atree <- function(newdata, rules){
 	pred <- rep(0,N);
 	for(i in 1:n.rules){
 		idx <- eval(parse(text=as.character(rules[i,"rule"])),envir=df);
-		pred[idx] <- rules[i,"pred"]
+		pred[idx] <- rules[i,"pred"];
 	}
 	return(pred)
 }
