@@ -1,0 +1,639 @@
+require(ggplot2);#
+require(reshape);#
+source("alphaTree.R");#
+#
+# generate synthetic data#
+P <- 1000;#
+N <- 2000;#
+synth <- data.frame(x.1 = rnorm(N,0,0.8),x.2 = rnorm(P,1,1), class="pos");#
+synth <- rbind(synth,data.frame(x.1= rnorm(N,-1,2),x.2=rnorm(N,-1,2),class="neg"));#
+X <- model.matrix(class~.,data=synth);#
+y <- as.factor(synth[,"class"]);#
+# two alpha-trees with different alpha values#
+model <- grow.atree(X,y,0.5,4,F);#
+pred <- predict.atree(X,model$rules);#
+#
+# compare the results from different alpha values#
+data <- data.frame(x.1=X[,2],x.2=X[,3],pred=pred,label=y);#
+colnames(data.l) <- c("x.1","x.2","pred","label")#
+ggplot(data=data.l,aes(x=x.1,y=x.2,colour=pred))+theme_bw()+geom_point(size=1)+geom_vline(xintercept=0)+geom_hline(yintercept=0)+facet_grid(label~.);
+data <- data.frame(x.1=X[,2],x.2=X[,3],pred=pred,label=y);#
+ggplot(data=data,aes(x=x.1,y=x.2,colour=pred))+theme_bw()+geom_point(size=1)+geom_vline(xintercept=0)+geom_hline(yintercept=0)+facet_grid(label~.);
+y.lst <- unique(y);
+y.lst
+data.frame(pid=1, rule="", y.lst)
+data.frame(pid=1, rule="", y.lst[0]=0.0,y.lst[1]=1.0)
+data.frame(pid=1, rule="", minority=0.0,majority=1.0)
+class.ratio(y,y.lst)
+y.lst
+c(y.lst[2],y.lst[1])
+grow.atree <- function(X, y, alpha, depth, c.order){#
+#
+	N <- length(y); # a total number of data samples#
+	pid.lst <- rep(1,N); # a list of partition indeces#
+	y.lst <- sort(unique(y),decreasing=FALSE);#
+	if(class.ratio(y, y.lst) > 0.5){#
+		y.lst <- sort(unique(y),decreasing=TRUE);#
+	}#
+	rules <- data.frame(pid=1, rule="", minor.class=0.0, major.class=1.0);#
+#
+	# Create a finite depth $\alpha$-Tree.#
+	for(d in 1:depth){#
+#
+		n.pid <- length(unique(pid.lst));#
+		rules.tmp <- NULL;#
+		pid.lst.tmp <- rep(1,N);#
+		pid.new <- 1;#
+#
+		# Go over the existing paritions and divide into new partitions.		#
+		for(pid.old in 1:n.pid){#
+#
+			sub.idx <- which(pid.lst==pid.old);#
+			X.sub <- X[sub.idx,];#
+			y.sub <- y[sub.idx];#
+			split.result <- split.variable(X.sub, y.sub, alpha, y.lst);	#
+			feature <- split.result$feature;#
+			value <- split.result$value;#
+			if(is.na(feature)){ # No splitting variable#
+				pid.lst.tmp[sub.idx] <- pid.new;#
+				rules.tmp <- rbind(rules.tmp, #
+									data.frame(pid=pid.new, #
+									rule=rules[pid.old,"rule"],#
+									minor.class=rules[pid.old,"pred"],#
+									major.class=(1-rules[pid.old,"pred"])));#
+				pid.new <- pid.new + 1;				#
+			}else{ # Split.#
+				r.var <- as.character(colnames(X)[feature]);#
+				r.value <- as.character(value);#
+				child1.idx <- sub.idx[which(X.sub[,feature] <= value)];#
+				child2.idx <- sub.idx[which(X.sub[,feature] > value)];#
+				pid.lst.tmp[child1.idx] <- pid.new;#
+				rules.tmp <- rbind(rules.tmp,#
+					data.frame(pid=pid.new, #
+					rule=append.rule(rules[pid.old,2],r.var,r.value,"<="),#
+					minor.class=class.ratio(y[child1.idx],y.lst),#
+					major.class=(1-class.ratio(y[child1.idx],y.lst))));#
+				pid.new <- pid.new + 1;#
+				pid.lst.tmp[child2.idx] <- pid.new;#
+				rules.tmp <- rbind(rules.tmp,#
+					data.frame(pid=pid.new, #
+					rule=append.rule(rules[pid.old,2],r.var,r.value,">"),#
+					minor.class=class.ratio(y[child2.idx],y.lst),#
+					major.class=(1-class.ratio(y[child2.idx],y.lst))));#
+				pid.new <- pid.new + 1;#
+			}#
+		}#
+		pid.lst <- pid.lst.tmp;#
+		rules <- rules.tmp;#
+	}#
+	return(list(minor.class=y.lst[1], major.class=y.lst[2], rules=rules));#
+}
+model <- grow.atree(X,y,0.5,4,F);
+grow.atree <- function(X, y, alpha, depth, c.order){#
+#
+	N <- length(y); # a total number of data samples#
+	pid.lst <- rep(1,N); # a list of partition indeces#
+	y.lst <- sort(unique(y),decreasing=FALSE);#
+	if(class.ratio(y, y.lst) > 0.5){#
+		y.lst <- sort(unique(y),decreasing=TRUE);#
+	}#
+	rules <- data.frame(pid=1, rule="", minor.class=0.0, major.class=1.0);#
+#
+	# Create a finite depth $\alpha$-Tree.#
+	for(d in 1:depth){#
+#
+		n.pid <- length(unique(pid.lst));#
+		rules.tmp <- NULL;#
+		pid.lst.tmp <- rep(1,N);#
+		pid.new <- 1;#
+#
+		# Go over the existing paritions and divide into new partitions.		#
+		for(pid.old in 1:n.pid){#
+#
+			sub.idx <- which(pid.lst==pid.old);#
+			X.sub <- X[sub.idx,];#
+			y.sub <- y[sub.idx];#
+			split.result <- split.variable(X.sub, y.sub, alpha, y.lst);	#
+			feature <- split.result$feature;#
+			value <- split.result$value;#
+			if(is.na(feature)){ # No splitting variable#
+				pid.lst.tmp[sub.idx] <- pid.new;#
+				rules.tmp <- rbind(rules.tmp, #
+									data.frame(pid=pid.new, #
+									rule=rules[pid.old,"rule"],#
+									minor.class=rules[pid.old,"minor.class"],#
+									major.class=rules[pid.old,"major.class"]));#
+				pid.new <- pid.new + 1;				#
+			}else{ # Split.#
+				r.var <- as.character(colnames(X)[feature]);#
+				r.value <- as.character(value);#
+				child1.idx <- sub.idx[which(X.sub[,feature] <= value)];#
+				child2.idx <- sub.idx[which(X.sub[,feature] > value)];#
+				pid.lst.tmp[child1.idx] <- pid.new;#
+				rules.tmp <- rbind(rules.tmp,#
+					data.frame(pid=pid.new, #
+					rule=append.rule(rules[pid.old,2],r.var,r.value,"<="),#
+					minor.class=class.ratio(y[child1.idx],y.lst),#
+					major.class=(1-class.ratio(y[child1.idx],y.lst))));#
+				pid.new <- pid.new + 1;#
+				pid.lst.tmp[child2.idx] <- pid.new;#
+				rules.tmp <- rbind(rules.tmp,#
+					data.frame(pid=pid.new, #
+					rule=append.rule(rules[pid.old,2],r.var,r.value,">"),#
+					minor.class=class.ratio(y[child2.idx],y.lst),#
+					major.class=(1-class.ratio(y[child2.idx],y.lst))));#
+				pid.new <- pid.new + 1;#
+			}#
+		}#
+		pid.lst <- pid.lst.tmp;#
+		rules <- rules.tmp;#
+	}#
+	return(list(minor.class=y.lst[1], major.class=y.lst[2], rules=rules));#
+}
+model <- grow.atree(X,y,0.5,4,F);
+model
+grow.atree <- function(X, y, alpha, depth, c.order){#
+#
+	N <- length(y); # a total number of data samples#
+	pid.lst <- rep(1,N); # a list of partition indeces#
+	y.lst <- sort(unique(y),decreasing=FALSE);#
+	if(class.ratio(y, y.lst) > 0.5){#
+		y.lst <- sort(unique(y),decreasing=TRUE);#
+	}#
+	minor.class <- class.ratio(y.y.lst);#
+	major.class <- 1 - minor.class;	#
+	rules <- data.frame(pid=1, rule="", minor.class=minor.class, major.class=major.class, size=N);#
+#
+	# Create a finite depth $\alpha$-Tree.#
+	for(d in 1:depth){#
+#
+		n.pid <- length(unique(pid.lst));#
+		rules.tmp <- NULL;#
+		pid.lst.tmp <- rep(1,N);#
+		pid.new <- 1;#
+#
+		# Go over the existing paritions and divide into new partitions.		#
+		for(pid.old in 1:n.pid){#
+#
+			sub.idx <- which(pid.lst==pid.old);#
+			X.sub <- X[sub.idx,];#
+			y.sub <- y[sub.idx];#
+			split.result <- split.variable(X.sub, y.sub, alpha, y.lst);	#
+			feature <- split.result$feature;#
+			value <- split.result$value;#
+			if(is.na(feature)){ # No splitting variable#
+				pid.lst.tmp[sub.idx] <- pid.new;#
+				rules.tmp <- rbind(rules.tmp, #
+									data.frame(pid=pid.new, #
+									rule=rules[pid.old,"rule"],#
+									minor.class=rules[pid.old,"minor.class"],#
+									major.class=rules[pid.old,"major.class"],#
+									size=length(sub.idx)));#
+				pid.new <- pid.new + 1;				#
+			}else{ # Split.#
+				r.var <- as.character(colnames(X)[feature]);#
+				r.value <- as.character(value);#
+				child1.idx <- sub.idx[which(X.sub[,feature] <= value)];#
+				child2.idx <- sub.idx[which(X.sub[,feature] > value)];#
+				pid.lst.tmp[child1.idx] <- pid.new;#
+				minor.class.1 <- class.ratio(y[child1.idx],y.lst);#
+				major.class.1 <- 1 - minor.class;	#
+				rules.tmp <- rbind(rules.tmp,#
+					data.frame(pid=pid.new, #
+					rule=append.rule(rules[pid.old,2],r.var,r.value,"<="),#
+					minor.class=minor.class.1,#
+					major.class=major.class.1,#
+					size=length(child1.idx)));#
+				pid.new <- pid.new + 1;#
+				pid.lst.tmp[child2.idx] <- pid.new;#
+				minor.class.2 <- class.ratio(y[child2.idx],y.lst);#
+				major.class.2 <- 1 - minor.class;	#
+				rules.tmp <- rbind(rules.tmp,#
+					data.frame(pid=pid.new, #
+					rule=append.rule(rules[pid.old,2],r.var,r.value,">"),#
+					minor.class=minor.class.2,#
+					major.class=major.class.2,#
+					size=length(child2.idx)));#
+				pid.new <- pid.new + 1;#
+			}#
+		}#
+		pid.lst <- pid.lst.tmp;#
+		rules <- rules.tmp;#
+	}#
+	return(list(minor.class=y.lst[1], major.class=y.lst[2], rules=rules));#
+}
+model <- grow.atree(X,y,0.5,4,F);
+grow.atree <- function(X, y, alpha, depth, c.order){#
+#
+	N <- length(y); # a total number of data samples#
+	pid.lst <- rep(1,N); # a list of partition indeces#
+	y.lst <- sort(unique(y),decreasing=FALSE);#
+	if(class.ratio(y, y.lst) > 0.5){#
+		y.lst <- sort(unique(y),decreasing=TRUE);#
+	}#
+	minor.class <- class.ratio(y.lst);#
+	major.class <- 1 - minor.class;	#
+	rules <- data.frame(pid=1, rule="", minor.class=minor.class, major.class=major.class, size=N);#
+#
+	# Create a finite depth $\alpha$-Tree.#
+	for(d in 1:depth){#
+#
+		n.pid <- length(unique(pid.lst));#
+		rules.tmp <- NULL;#
+		pid.lst.tmp <- rep(1,N);#
+		pid.new <- 1;#
+#
+		# Go over the existing paritions and divide into new partitions.		#
+		for(pid.old in 1:n.pid){#
+#
+			sub.idx <- which(pid.lst==pid.old);#
+			X.sub <- X[sub.idx,];#
+			y.sub <- y[sub.idx];#
+			split.result <- split.variable(X.sub, y.sub, alpha, y.lst);	#
+			feature <- split.result$feature;#
+			value <- split.result$value;#
+			if(is.na(feature)){ # No splitting variable#
+				pid.lst.tmp[sub.idx] <- pid.new;#
+				rules.tmp <- rbind(rules.tmp, #
+									data.frame(pid=pid.new, #
+									rule=rules[pid.old,"rule"],#
+									minor.class=rules[pid.old,"minor.class"],#
+									major.class=rules[pid.old,"major.class"],#
+									size=length(sub.idx)));#
+				pid.new <- pid.new + 1;				#
+			}else{ # Split.#
+				r.var <- as.character(colnames(X)[feature]);#
+				r.value <- as.character(value);#
+				child1.idx <- sub.idx[which(X.sub[,feature] <= value)];#
+				child2.idx <- sub.idx[which(X.sub[,feature] > value)];#
+				pid.lst.tmp[child1.idx] <- pid.new;#
+				minor.class.1 <- class.ratio(y[child1.idx],y.lst);#
+				major.class.1 <- 1 - minor.class;	#
+				rules.tmp <- rbind(rules.tmp,#
+					data.frame(pid=pid.new, #
+					rule=append.rule(rules[pid.old,2],r.var,r.value,"<="),#
+					minor.class=minor.class.1,#
+					major.class=major.class.1,#
+					size=length(child1.idx)));#
+				pid.new <- pid.new + 1;#
+				pid.lst.tmp[child2.idx] <- pid.new;#
+				minor.class.2 <- class.ratio(y[child2.idx],y.lst);#
+				major.class.2 <- 1 - minor.class;	#
+				rules.tmp <- rbind(rules.tmp,#
+					data.frame(pid=pid.new, #
+					rule=append.rule(rules[pid.old,2],r.var,r.value,">"),#
+					minor.class=minor.class.2,#
+					major.class=major.class.2,#
+					size=length(child2.idx)));#
+				pid.new <- pid.new + 1;#
+			}#
+		}#
+		pid.lst <- pid.lst.tmp;#
+		rules <- rules.tmp;#
+	}#
+	return(list(minor.class=y.lst[1], major.class=y.lst[2], rules=rules));#
+}
+model <- grow.atree(X,y,0.5,4,F);
+grow.atree <- function(X, y, alpha, depth, c.order){#
+#
+	N <- length(y); # a total number of data samples#
+	pid.lst <- rep(1,N); # a list of partition indeces#
+	y.lst <- sort(unique(y),decreasing=FALSE);#
+	if(class.ratio(y, y.lst) > 0.5){#
+		y.lst <- sort(unique(y),decreasing=TRUE);#
+	}#
+	minor.class <- class.ratio(y, y.lst);#
+	major.class <- 1 - minor.class;	#
+	rules <- data.frame(pid=1, rule="", minor.class=minor.class, major.class=major.class, size=N);#
+#
+	# Create a finite depth $\alpha$-Tree.#
+	for(d in 1:depth){#
+#
+		n.pid <- length(unique(pid.lst));#
+		rules.tmp <- NULL;#
+		pid.lst.tmp <- rep(1,N);#
+		pid.new <- 1;#
+#
+		# Go over the existing paritions and divide into new partitions.		#
+		for(pid.old in 1:n.pid){#
+#
+			sub.idx <- which(pid.lst==pid.old);#
+			X.sub <- X[sub.idx,];#
+			y.sub <- y[sub.idx];#
+			split.result <- split.variable(X.sub, y.sub, alpha, y.lst);	#
+			feature <- split.result$feature;#
+			value <- split.result$value;#
+			if(is.na(feature)){ # No splitting variable#
+				pid.lst.tmp[sub.idx] <- pid.new;#
+				rules.tmp <- rbind(rules.tmp, #
+									data.frame(pid=pid.new, #
+									rule=rules[pid.old,"rule"],#
+									minor.class=rules[pid.old,"minor.class"],#
+									major.class=rules[pid.old,"major.class"],#
+									size=length(sub.idx)));#
+				pid.new <- pid.new + 1;				#
+			}else{ # Split.#
+				r.var <- as.character(colnames(X)[feature]);#
+				r.value <- as.character(value);#
+				child1.idx <- sub.idx[which(X.sub[,feature] <= value)];#
+				child2.idx <- sub.idx[which(X.sub[,feature] > value)];#
+				pid.lst.tmp[child1.idx] <- pid.new;#
+				minor.class.1 <- class.ratio(y[child1.idx],y.lst);#
+				major.class.1 <- 1 - minor.class;	#
+				rules.tmp <- rbind(rules.tmp,#
+					data.frame(pid=pid.new, #
+					rule=append.rule(rules[pid.old,2],r.var,r.value,"<="),#
+					minor.class=minor.class.1,#
+					major.class=major.class.1,#
+					size=length(child1.idx)));#
+				pid.new <- pid.new + 1;#
+				pid.lst.tmp[child2.idx] <- pid.new;#
+				minor.class.2 <- class.ratio(y[child2.idx],y.lst);#
+				major.class.2 <- 1 - minor.class;	#
+				rules.tmp <- rbind(rules.tmp,#
+					data.frame(pid=pid.new, #
+					rule=append.rule(rules[pid.old,2],r.var,r.value,">"),#
+					minor.class=minor.class.2,#
+					major.class=major.class.2,#
+					size=length(child2.idx)));#
+				pid.new <- pid.new + 1;#
+			}#
+		}#
+		pid.lst <- pid.lst.tmp;#
+		rules <- rules.tmp;#
+	}#
+	return(list(minor.class=y.lst[1], major.class=y.lst[2], rules=rules));#
+}
+model <- grow.atree(X,y,0.5,4,F);
+model
+grow.atree <- function(X, y, alpha, depth, c.order){#
+#
+	N <- length(y); # a total number of data samples#
+	pid.lst <- rep(1,N); # a list of partition indeces#
+	y.lst <- sort(unique(y),decreasing=FALSE);#
+	if(class.ratio(y, y.lst) > 0.5){#
+		y.lst <- sort(unique(y),decreasing=TRUE);#
+	}#
+	minor.class <- class.ratio(y, y.lst);#
+	major.class <- 1 - minor.class;	#
+	rules <- data.frame(pid=1, rule="", minor.class=minor.class, major.class=major.class, size=N);#
+#
+	# Create a finite depth $\alpha$-Tree.#
+	for(d in 1:depth){#
+#
+		n.pid <- length(unique(pid.lst));#
+		rules.tmp <- NULL;#
+		pid.lst.tmp <- rep(1,N);#
+		pid.new <- 1;#
+#
+		# Go over the existing paritions and divide into new partitions.		#
+		for(pid.old in 1:n.pid){#
+#
+			sub.idx <- which(pid.lst==pid.old);#
+			X.sub <- X[sub.idx,];#
+			y.sub <- y[sub.idx];#
+			split.result <- split.variable(X.sub, y.sub, alpha, y.lst);	#
+			feature <- split.result$feature;#
+			value <- split.result$value;#
+			if(is.na(feature)){ # No splitting variable#
+				pid.lst.tmp[sub.idx] <- pid.new;#
+				rules.tmp <- rbind(rules.tmp, #
+									data.frame(pid=pid.new, #
+									rule=rules[pid.old,"rule"],#
+									minor.class=rules[pid.old,"minor.class"],#
+									major.class=rules[pid.old,"major.class"],#
+									size=length(sub.idx)));#
+				pid.new <- pid.new + 1;				#
+			}else{ # Split.#
+				r.var <- as.character(colnames(X)[feature]);#
+				r.value <- as.character(value);#
+				child1.idx <- sub.idx[which(X.sub[,feature] <= value)];#
+				child2.idx <- sub.idx[which(X.sub[,feature] > value)];#
+				pid.lst.tmp[child1.idx] <- pid.new;#
+				minor.class.1 <- class.ratio(y[child1.idx],y.lst);#
+				major.class.1 <- 1 - minor.class.1;	#
+				rules.tmp <- rbind(rules.tmp,#
+					data.frame(pid=pid.new, #
+					rule=append.rule(rules[pid.old,2],r.var,r.value,"<="),#
+					minor.class=minor.class.1,#
+					major.class=major.class.1,#
+					size=length(child1.idx)));#
+				pid.new <- pid.new + 1;#
+				pid.lst.tmp[child2.idx] <- pid.new;#
+				minor.class.2 <- class.ratio(y[child2.idx],y.lst);#
+				major.class.2 <- 1 - minor.class.2;	#
+				rules.tmp <- rbind(rules.tmp,#
+					data.frame(pid=pid.new, #
+					rule=append.rule(rules[pid.old,2],r.var,r.value,">"),#
+					minor.class=minor.class.2,#
+					major.class=major.class.2,#
+					size=length(child2.idx)));#
+				pid.new <- pid.new + 1;#
+			}#
+		}#
+		pid.lst <- pid.lst.tmp;#
+		rules <- rules.tmp;#
+	}#
+	return(list(minor.class=y.lst[1], major.class=y.lst[2], rules=rules));#
+}
+model <- grow.atree(X,y,0.5,4,F);
+model
+grow.atree <- function(X, y, alpha, depth){#
+#
+	N <- length(y); # a total number of data samples#
+	pid.lst <- rep(1,N); # a list of partition indeces#
+	y.lst <- sort(unique(y),decreasing=FALSE);#
+	if(class.ratio(y, y.lst) > 0.5){#
+		y.lst <- sort(unique(y),decreasing=TRUE);#
+	}#
+	minor.class <- class.ratio(y, y.lst);#
+	major.class <- 1 - minor.class;	#
+	rules <- data.frame(pid=1, rule="", minor.class=minor.class, major.class=major.class, size=N);#
+#
+	# Create a finite depth $\alpha$-Tree.#
+	for(d in 1:depth){#
+#
+		n.pid <- length(unique(pid.lst));#
+		rules.tmp <- NULL;#
+		pid.lst.tmp <- rep(1,N);#
+		pid.new <- 1;#
+#
+		# Go over the existing paritions and divide into new partitions.		#
+		for(pid.old in 1:n.pid){#
+#
+			sub.idx <- which(pid.lst==pid.old);#
+			X.sub <- X[sub.idx,];#
+			y.sub <- y[sub.idx];#
+			split.result <- split.variable(X.sub, y.sub, alpha, y.lst);	#
+			feature <- split.result$feature;#
+			value <- split.result$value;#
+			if(is.na(feature)){ # No splitting variable#
+				pid.lst.tmp[sub.idx] <- pid.new;#
+				rules.tmp <- rbind(rules.tmp, #
+									data.frame(pid=pid.new, #
+									rule=rules[pid.old,"rule"],#
+									minor.class=rules[pid.old,"minor.class"],#
+									major.class=rules[pid.old,"major.class"],#
+									size=length(sub.idx)));#
+				pid.new <- pid.new + 1;				#
+			}else{ # Split.#
+				r.var <- as.character(colnames(X)[feature]);#
+				r.value <- as.character(value);#
+				child1.idx <- sub.idx[which(X.sub[,feature] <= value)];#
+				child2.idx <- sub.idx[which(X.sub[,feature] > value)];#
+				pid.lst.tmp[child1.idx] <- pid.new;#
+				minor.class.1 <- class.ratio(y[child1.idx],y.lst);#
+				major.class.1 <- 1 - minor.class.1;	#
+				rules.tmp <- rbind(rules.tmp,#
+					data.frame(pid=pid.new, #
+						rule=append.rule(rules[pid.old,2],r.var,r.value,"<="),#
+						minor.class=minor.class.1, major.class=major.class.1,#
+						size=length(child1.idx)));#
+				pid.new <- pid.new + 1;#
+				pid.lst.tmp[child2.idx] <- pid.new;#
+				minor.class.2 <- class.ratio(y[child2.idx],y.lst);#
+				major.class.2 <- 1 - minor.class.2;	#
+				rules.tmp <- rbind(rules.tmp,#
+					data.frame(pid=pid.new, #
+					rule=append.rule(rules[pid.old,2],r.var,r.value,">"),#
+					minor.class=minor.class.2, major.class=major.class.2,#
+					size=length(child2.idx)));#
+				pid.new <- pid.new + 1;#
+			}#
+		}#
+		pid.lst <- pid.lst.tmp;#
+		rules <- rules.tmp;#
+	}#
+	return(list(minor.class=y.lst[1], major.class=y.lst[2], rules=rules));#
+}#
+#
+predict.atree <- function(newdata, rules){#
+	df <- as.data.frame(newdata);#
+	n.rules <- nrow(rules);#
+	N <- nrow(newdata);#
+	minor.class <- rep(0,N);#
+	major.class <- rep(1,N);#
+#
+	for(i in 1:n.rules){#
+		idx <- eval(parse(text=as.character(rules[i,"rule"])),envir=df);#
+		minor.class[idx] <- rules[i,"minor.class"];#
+		major.class[idx] <- rules[i,"major.class"];#
+	}#
+	return(list(minor.class,major.class))#
+}
+model <- grow.atree(X, y, 0.5,4);#
+pred <- predict.atree(X, model$rules);
+pred
+require(ROCR);
+model <- grow.atree(X, y, 0.5,4);#
+pred <- predict.atree(X, model$rules);
+model <- grow.atree(X, y, 0.5,4);#
+alpha.pred <- predict.atree(X, model$rules);#
+#
+rocr.pred <- prediction(alpha.pred$minor.class, y);#
+rocr.perf <- performance(rocr.pred, "tpr", "fpr");#
+plot(rocr.perf);
+alpha.pred$minor.class
+predict.atree <- function(newdata, rules){#
+	# Predicts#
+	# Args:#
+	#		newdata: feature matrix#
+	#		rules: existing rules#
+	# Returns:#
+	#	A prediction vector.#
+	df <- as.data.frame(newdata);#
+	n.rules <- nrow(rules);#
+	N <- nrow(newdata);#
+	minor.class <- rep(0,N);#
+	major.class <- rep(1,N);#
+#
+	for(i in 1:n.rules){#
+		idx <- eval(parse(text=as.character(rules[i,"rule"])),envir=df);#
+		minor.class[idx] <- rules[i,"minor.class"];#
+		major.class[idx] <- rules[i,"major.class"];#
+	}#
+	return(list(minor.class=minor.class, major.class=major.class))#
+}
+model <- grow.atree(X, y, 0.5,4);#
+alpha.pred <- predict.atree(X, model$rules);#
+#
+rocr.pred <- prediction(alpha.pred$minor.class, y);#
+rocr.perf <- performance(rocr.pred, "tpr", "fpr");#
+plot(rocr.perf);
+minor.class <- model$minor.class;
+minor.class
+(y==minor.class)
+P <- 1000;#
+N <- 2000;#
+synth <- data.frame(x.1 = rnorm(N,0,0.8),x.2 = rnorm(P,1,1), class="pos");#
+synth <- rbind(synth,data.frame(x.1= rnorm(N,-1,2),x.2=rnorm(N,-1,2),class="neg"));#
+X <- model.matrix(class~.,data=synth);#
+y <- as.factor(synth[,"class"]);#
+model <- grow.atree(X, y, 0.5,4);#
+minor.class <- model$minor.class;#
+alpha.pred <- predict.atree(X, model$rules);#
+rocr.pred <- prediction(alpha.pred$minor.class, (y==minor.class));#
+rocr.perf <- performance(rocr.pred, "tpr", "fpr");#
+plot(rocr.perf);
+P <- 1000;#
+N <- 2000;#
+synth <- data.frame(x.1 = rnorm(N,0,0.8),x.2 = rnorm(P,1,1), class="pos");#
+synth <- rbind(synth,data.frame(x.1= rnorm(N,-1,2),x.2=rnorm(N,-1,2),class="neg"));#
+X <- model.matrix(class~.,data=synth);#
+y <- as.factor(synth[,"class"]);#
+model <- grow.atree(X, y, 0.5,4);#
+minor.class <- model$minor.class;#
+alpha.pred <- predict.atree(X, model$rules);#
+rocr.pred <- prediction(alpha.pred$minor.class, (y==minor.class));#
+rocr.perf <- performance(rocr.pred, "tpr", "fpr");#
+plot(rocr.perf);
+model
+require(rpart);
+ls()
+car.test.frame
+kyphosis
+X <- model.matrix(Kyphosis ~ ., data=kyphosis)
+X
+y <- kyphosis[,"Kyphosis"];
+y
+model <- grow.atree(X, y, 0.5,4);#
+minor.class <- model$minor.class;#
+alpha.pred <- predict.atree(X, model$rules);#
+rocr.pred <- prediction(alpha.pred$minor.class, (y==minor.class));#
+rocr.perf <- performance(rocr.pred, "tpr", "fpr");#
+plot(rocr.perf);
+model <- grow.atree(X, y, 1.0, 4);#
+minor.class <- model$minor.class;#
+alpha.pred <- predict.atree(X, model$rules);#
+rocr.pred <- prediction(alpha.pred$minor.class, (y==minor.class));#
+rocr.perf <- performance(rocr.pred, "tpr", "fpr");#
+plot(rocr.perf);
+model <- grow.atree(X, y, 0.0, 4);#
+minor.class <- model$minor.class;#
+alpha.pred <- predict.atree(X, model$rules);#
+rocr.pred <- prediction(alpha.pred$minor.class, (y==minor.class));#
+rocr.perf <- performance(rocr.pred, "tpr", "fpr");#
+plot(rocr.perf);
+model <- grow.atree(X, y, 2.0, 4);#
+minor.class <- model$minor.class;#
+alpha.pred <- predict.atree(X, model$rules);#
+rocr.pred <- prediction(alpha.pred$minor.class, (y==minor.class));#
+rocr.perf <- performance(rocr.pred, "tpr", "fpr");#
+plot(rocr.perf);
+model <- grow.atree(X, y, 2.0, 2);#
+minor.class <- model$minor.class;#
+alpha.pred <- predict.atree(X, model$rules);#
+rocr.pred <- prediction(alpha.pred$minor.class, (y==minor.class));#
+rocr.perf <- performance(rocr.pred, "tpr", "fpr");#
+plot(rocr.perf);
+model
+car.test.frame
+reuiqre(datasets)
+require(datasets)
+iris
+iris3
+freeny
+esohp
+esoph
+airquality
+print(model)

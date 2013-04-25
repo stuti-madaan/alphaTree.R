@@ -1,30 +1,56 @@
 
 alpha.div <- function(c1, c2, alpha){
-
-	adiv <- -Inf;
+	# Computes $\alpha$-divergence between two distributions P and Q.
+	# Args:
+	#		c1: positive class ratio of P
+	#		c2: positive class ratio of Q
+	#		alpha: alpha parameter ranging from $-\infty$ to $\infty$
+	# Returns:
+	#	The $\alpha$ divergence between P and Q with the parameter $\alpha$
+	
+	# Initialization
+	adiv <- -Inf; 
+	
+	# Special cases when $\alpha=1$ or $\alpha=0$
 	if(alpha==1.0){ adiv <- sum(log(c1/c2)*c1); }
 	else if(alpha==0.0){ adiv <- sum(log(c2/c1)*c2);	}
-	else{ adiv <- (1.0-sum((c1^(alpha)) * (c2^(1-alpha))))/alpha/(1-alpha);}
+	else{ 
+		# $\alpha$-divergence for general cases
+		adiv <- (1.0-sum((c1^(alpha)) * (c2^(1-alpha))))/alpha/(1-alpha);
+	}
 	
+	# Error handling
 	if(adiv <= 0.0){ adiv <- 0.0; }
 
 	return(adiv);
 }
 
 alpha.gain <- function(x, y, alpha, y.lst){
-	
+	# Computes $\alpha$-Gain for feature "x" 
+	# Args:
+	#		x: feature
+	#		y: target
+	#		alpha: alpha parameter ranging from $-\infty$ to $\infty$
+	#		y.lst: unique values of "y"
+	# Returns:
+	#	The $\alpha$-Gain of "x"
+
+	# Initialization
 	smoother <- 1e-5;
 	max.gain <- -Inf;
 	max.value <- NA;
 	x.lst <- unique(x);
 	
+	# If the unique splits of "x" are more than 30, then bin "x" into 30 values.
 	if(length(x.lst) > 30){
 		width <- (max(x)-min(x))/30;
 		x.lst <- c(seq(from=min(x), to=max(x), by=width));
 	}
 	
+	# If "x" has only two unique values, we need only one value.
 	if(length(x.lst)==2){ x.lst <- x.lst[1]; }
 	
+	# Search all the splits, then find the maximum $\alpha$-Gain.
 	for(split in x.lst){
 		y.left <- y[which(x <= split)];
 		y.right <- y[which(x > split)];
@@ -57,15 +83,27 @@ alpha.gain <- function(x, y, alpha, y.lst){
 
 
 split.variable <- function(X, y, alpha, y.lst){
+	# Find a split variable by searching all the variables 
+	# Args:
+	#		X: feature matrix
+	#		y: target vector
+	#		alpha: alpha parameter ranging from $-\infty$ to $\infty$
+	#		y.lst: the unique values of "y"
+	# Returns:
+	#	The split variable
+
+	# Initialization
 	M <- ncol(X);
 	N <- nrow(X);
 	max.gain <- -Inf;
 	max.feature <- NA;
 	max.value <- NA;
 	
+	# If the total number of data is less than 3, then stop.
 	if(N < 3 || class.ratio(y, y.lst)==0 || class.ratio(y, y.lst)==1)
 	{ return(list(gain=max.gain, feature=max.feature, value=max.value)); }
 	
+	# Search all the variables, and choose the best.
 	for(i in 1:M){
 		if(length(unique(X[,i]))==1) next;
 		ag <- alpha.gain(X[,i], y, alpha, y.lst);
@@ -79,6 +117,15 @@ split.variable <- function(X, y, alpha, y.lst){
 }
 
 append.rule <- function(rule,var,value,op){
+	# Append a new decsion rule to an existing rule
+	# Args:
+	#		rule: an existing rule
+	#		var: variable
+	#		variable: threshold value
+	#		op: operator
+	# Returns:
+	#	A new rule
+
 	newrule = ""
 	if(rule==""){ newrule=paste(var,op,value, sep=""); }
 	else{ newrule=paste(rule," & ", var, op, value, sep="");}
@@ -86,24 +133,46 @@ append.rule <- function(rule,var,value,op){
 }
 
 class.ratio <- function(y, y.lst){
+	# Computes a class ratio
+	# Args:
+	#		y: a target vector
+	#		y.lst: the unique values of "y"
+	# Returns:
+	#	A class ratio
+	
 	ratio <- mean(as.numeric(y==y.lst[1]));
 	return(ratio)
 }
 
-grow.atree <- function(X, y, alpha, depth, c.order){
+grow.atree <- function(X, y, alpha, depth){
+	# Grows an $\alpha$-Tree
+	# Args:
+	#		X: feature matrix
+	#		y: target
+	#		alpha: alpha parameter
+	#		depth: tree depth
+	# Returns:
+	#	An $\alpha$-Tree
 
 	N <- length(y); # a total number of data samples
 	pid.lst <- rep(1,N); # a list of partition indeces
-	rules <- data.frame(pid=1,rule="",pred=0.0);
-	y.lst <- sort(unique(y),decreasing=c.order);
+	y.lst <- sort(unique(y),decreasing=FALSE);
+	if(class.ratio(y, y.lst) > 0.5){
+		y.lst <- sort(unique(y),decreasing=TRUE);
+	}
+	minor.class <- class.ratio(y, y.lst);
+	major.class <- 1 - minor.class;	
+	rules <- data.frame(pid=1, rule="", minor.class=minor.class, major.class=major.class, size=N);
 
+	# Create a finite depth $\alpha$-Tree.
 	for(d in 1:depth){
 
 		n.pid <- length(unique(pid.lst));
 		rules.tmp <- NULL;
 		pid.lst.tmp <- rep(1,N);
 		pid.new <- 1;
-		
+
+		# Go over the existing paritions and divide into new partitions.		
 		for(pid.old in 1:n.pid){
 
 			sub.idx <- which(pid.lst==pid.old);
@@ -113,46 +182,67 @@ grow.atree <- function(X, y, alpha, depth, c.order){
 			split.result <- split.variable(X.sub, y.sub, alpha, y.lst);	
 			feature <- split.result$feature;
 			value <- split.result$value;
+			
 			if(is.na(feature)){ # No splitting variable
 				pid.lst.tmp[sub.idx] <- pid.new;
 				rules.tmp <- rbind(rules.tmp, 
 									data.frame(pid=pid.new, 
 									rule=rules[pid.old,"rule"],
-									pred=rules[pid.old,"pred"]));
+									minor.class=rules[pid.old,"minor.class"],
+									major.class=rules[pid.old,"major.class"],
+									size=length(sub.idx)));
 				pid.new <- pid.new + 1;				
-			}else{
+			}else{ # Split.
 				r.var <- as.character(colnames(X)[feature]);
 				r.value <- as.character(value);
 				child1.idx <- sub.idx[which(X.sub[,feature] <= value)];
 				child2.idx <- sub.idx[which(X.sub[,feature] > value)];
+				
 				pid.lst.tmp[child1.idx] <- pid.new;
+				minor.class.1 <- class.ratio(y[child1.idx],y.lst);
+				major.class.1 <- 1 - minor.class.1;	
 				rules.tmp <- rbind(rules.tmp,
 					data.frame(pid=pid.new, 
-					rule=append.rule(rules[pid.old,2],r.var,r.value,"<="),
-					pred=class.ratio(y[child1.idx],y.lst)));
+						rule=append.rule(rules[pid.old,2],r.var,r.value,"<="),
+						minor.class=minor.class.1, major.class=major.class.1,
+						size=length(child1.idx)));
+					
 				pid.new <- pid.new + 1;
 				pid.lst.tmp[child2.idx] <- pid.new;
+				minor.class.2 <- class.ratio(y[child2.idx],y.lst);
+				major.class.2 <- 1 - minor.class.2;	
 				rules.tmp <- rbind(rules.tmp,
 					data.frame(pid=pid.new, 
 					rule=append.rule(rules[pid.old,2],r.var,r.value,">"),
-					pred=class.ratio(y[child2.idx],y.lst)));
+					minor.class=minor.class.2, major.class=major.class.2,
+					size=length(child2.idx)));
 				pid.new <- pid.new + 1;
 			}
 		}
 		pid.lst <- pid.lst.tmp;
 		rules <- rules.tmp;
 	}
-	return(list(positive=y.lst[1],rules=rules));
+	return(list(minor.class=y.lst[1], major.class=y.lst[2], rules=rules));
 }
 
 predict.atree <- function(newdata, rules){
+	# Predicts
+	# Args:
+	#		newdata: feature matrix
+	#		rules: existing rules
+	# Returns:
+	#	A prediction vector.
+	
 	df <- as.data.frame(newdata);
 	n.rules <- nrow(rules);
 	N <- nrow(newdata);
-	pred <- rep(0,N);
+	minor.class <- rep(0,N);
+	major.class <- rep(1,N);
+
 	for(i in 1:n.rules){
 		idx <- eval(parse(text=as.character(rules[i,"rule"])),envir=df);
-		pred[idx] <- rules[i,"pred"];
+		minor.class[idx] <- rules[i,"minor.class"];
+		major.class[idx] <- rules[i,"major.class"];
 	}
-	return(pred)
+	return(list(minor.class=minor.class, major.class=major.class))
 }
