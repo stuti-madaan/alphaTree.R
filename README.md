@@ -2,28 +2,11 @@ alphaTree.R
 ===========
 Description: A R version of alpha-Tree.
 
+Author: Yubin Park
 
-Example code:
+Contact: yubin.park@utexas.edu
 
-require(ggplot2);
+Reference: Ensembles of Alpha-Trees for Imbalanced Classification Problems, TKDE 2012
 
-source("alphaTree.R");
-
-N <- 500;
-
-synth <- data.frame(f1 = rnorm(N,1,1),
-                    f2 = rnorm(N,1,1),
-                    f3 = rnorm(N,1,1), 
-                    class="0");
-
-synth <- rbind(synth,data.frame(f1= rnorm(N,-1,1),
-                                f2=rnorm(N,-1,1),
-                                f3=rnorm(N,-1,1), 
-                                class="1"));
-
-X <- model.matrix(class~.,data=synth);
-
-y <- as.factor(synth[,"class"]);
-
-model <- grow.atree(X,y,alpha=0.5,depth=5);
+Note: Pleas read "examples.R". This alpha tree is a binary classification tree.
 
