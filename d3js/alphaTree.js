@@ -1,0 +1,1 @@
+var alphaTree={"plasma.glucose<=139.3":{"bmi<=26.84":"E[y]:0.044,  n:158","bmi>26.84":"E[y]:0.305,  n:413"},"plasma.glucose>139.3":{"plasma.glucose<=157.7":"E[y]:0.518,  n:85","plasma.glucose>157.7":"E[y]:0.812,  n:112"}};

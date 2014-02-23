@@ -1,0 +1,31 @@
+Learn-by-examples#
+# Author: Yubin Park#
+# Contact: yubin.park@utexas.edu#
+# Last Modified: Apr 25th, 2013#
+###################################
+#
+# example 1: build alpha trees with different alphas#
+#
+library(ROCR);#
+source("alphaTree.R");#
+#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+#
+option <- list(max.depth=3);#
+atfit <- atree(X, y, 0, option)#
+output.json(atfit);#
+perf <- performance(prediction(predict(atfit, X)$minor.class, y),"tpr","fpr")#
+plot(perf)
+pima <- read.csv('./data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]

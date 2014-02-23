@@ -1,639 +1,3039 @@
-require(ggplot2);#
-require(reshape);#
-source("alphaTree.R");#
-#
-# generate synthetic data#
-P <- 1000;#
-N <- 2000;#
-synth <- data.frame(x.1 = rnorm(N,0,0.8),x.2 = rnorm(P,1,1), class="pos");#
-synth <- rbind(synth,data.frame(x.1= rnorm(N,-1,2),x.2=rnorm(N,-1,2),class="neg"));#
-X <- model.matrix(class~.,data=synth);#
-y <- as.factor(synth[,"class"]);#
-# two alpha-trees with different alpha values#
-model <- grow.atree(X,y,0.5,4,F);#
-pred <- predict.atree(X,model$rules);#
-#
-# compare the results from different alpha values#
-data <- data.frame(x.1=X[,2],x.2=X[,3],pred=pred,label=y);#
-colnames(data.l) <- c("x.1","x.2","pred","label")#
-ggplot(data=data.l,aes(x=x.1,y=x.2,colour=pred))+theme_bw()+geom_point(size=1)+geom_vline(xintercept=0)+geom_hline(yintercept=0)+facet_grid(label~.);
-data <- data.frame(x.1=X[,2],x.2=X[,3],pred=pred,label=y);#
-ggplot(data=data,aes(x=x.1,y=x.2,colour=pred))+theme_bw()+geom_point(size=1)+geom_vline(xintercept=0)+geom_hline(yintercept=0)+facet_grid(label~.);
-y.lst <- unique(y);
-y.lst
-data.frame(pid=1, rule="", y.lst)
-data.frame(pid=1, rule="", y.lst[0]=0.0,y.lst[1]=1.0)
-data.frame(pid=1, rule="", minority=0.0,majority=1.0)
-class.ratio(y,y.lst)
-y.lst
-c(y.lst[2],y.lst[1])
-grow.atree <- function(X, y, alpha, depth, c.order){#
-#
-	N <- length(y); # a total number of data samples#
-	pid.lst <- rep(1,N); # a list of partition indeces#
-	y.lst <- sort(unique(y),decreasing=FALSE);#
-	if(class.ratio(y, y.lst) > 0.5){#
-		y.lst <- sort(unique(y),decreasing=TRUE);#
+a
+a[[4]]
+a[["a"]]
+push(a,1)
+append(a, "1")
+append(a, "a"="1")
+a
+append(a, list())
+append(a, list(a=1))
+elem <- strsplit(as.character(at[1,"rule"]),split=" & ")[[1]];#
+		info <- list(size=at[1,"size"],#
+				     minor.class = at[rid,"minor.class"],#
+				     major.class = at[rid,"major.class"]); #
+		leaf <- info;#
+		for(eid in length(elem):1){#
+			newleaf$elem[eid] <- leaf;#
+			leaf <- newleaf;#
+		}
+elem <- strsplit(as.character(at[1,"rule"]),split=" & ")[[1]];#
+		info <- list(size=at[1,"size"],#
+				     minor.class = at[1,"minor.class"],#
+				     major.class = at[1,"major.class"]); #
+		leaf <- info;#
+		for(eid in length(elem):1){#
+			newleaf$elem[eid] <- leaf;#
+			leaf <- newleaf;#
+		}
+elem <- strsplit(as.character(at[1,"rule"]),split=" & ")[[1]];#
+		info <- list(size=at[1,"size"],#
+				     minor.class = at[1,"minor.class"],#
+				     major.class = at[1,"major.class"]); #
+		leaf <- info;#
+		for(eid in length(elem):1){#
+			newleaf <- list()#
+			newleaf$elem[eid] <- leaf;#
+			leaf <- newleaf;#
+		}
+leaf
+elem <- strsplit(as.character(at[1,"rule"]),split=" & ")[[1]];#
+		info <- list(size=at[1,"size"],#
+				     minor.class = at[1,"minor.class"],#
+				     major.class = at[1,"major.class"]); #
+		leaf <- info;#
+		for(eid in length(elem):1){#
+			leaf <- list(elem[eid]=leaf)#
+		}
+list(elem[eid]=leaf)
+elem <- strsplit(as.character(at[1,"rule"]),split=" & ")[[1]];#
+		info <- list(size=at[1,"size"],#
+				     minor.class = at[1,"minor.class"],#
+				     major.class = at[1,"major.class"]); #
+		leaf <- info;#
+		for(eid in length(elem):1){#
+			leaf <- list(dummy=leaf)#
+			names(leaf)[1] <- elem[eid] #
+		}
+leaf
+cat(toJSON(leaf))
+unlist(at)
+at
+leaf[[$`V2<=139.3`$`V6<=26.84`$`V1<=2.4`$size]]
+dendogram
+as.dendogram(leaf)
+library(stats)
+as.dendogram(leaf)
+as.dendrogram(leaf)
+dendrogram
+max.depth <- 0;#
+for(i in 1:nrow(at)){#
+	elem <- strsplit(as.character(at[i,"rule"]),split=" & ")[[1]];#
+	if( max.depth < length(elem) ){#
+		max.depth <- length(elem);#
 	}#
-	rules <- data.frame(pid=1, rule="", minor.class=0.0, major.class=1.0);#
-#
-	# Create a finite depth $\alpha$-Tree.#
-	for(d in 1:depth){#
-#
-		n.pid <- length(unique(pid.lst));#
-		rules.tmp <- NULL;#
-		pid.lst.tmp <- rep(1,N);#
-		pid.new <- 1;#
-#
-		# Go over the existing paritions and divide into new partitions.		#
-		for(pid.old in 1:n.pid){#
-#
-			sub.idx <- which(pid.lst==pid.old);#
-			X.sub <- X[sub.idx,];#
-			y.sub <- y[sub.idx];#
-			split.result <- split.variable(X.sub, y.sub, alpha, y.lst);	#
-			feature <- split.result$feature;#
-			value <- split.result$value;#
-			if(is.na(feature)){ # No splitting variable#
-				pid.lst.tmp[sub.idx] <- pid.new;#
-				rules.tmp <- rbind(rules.tmp, #
-									data.frame(pid=pid.new, #
-									rule=rules[pid.old,"rule"],#
-									minor.class=rules[pid.old,"pred"],#
-									major.class=(1-rules[pid.old,"pred"])));#
-				pid.new <- pid.new + 1;				#
-			}else{ # Split.#
-				r.var <- as.character(colnames(X)[feature]);#
-				r.value <- as.character(value);#
-				child1.idx <- sub.idx[which(X.sub[,feature] <= value)];#
-				child2.idx <- sub.idx[which(X.sub[,feature] > value)];#
-				pid.lst.tmp[child1.idx] <- pid.new;#
-				rules.tmp <- rbind(rules.tmp,#
-					data.frame(pid=pid.new, #
-					rule=append.rule(rules[pid.old,2],r.var,r.value,"<="),#
-					minor.class=class.ratio(y[child1.idx],y.lst),#
-					major.class=(1-class.ratio(y[child1.idx],y.lst))));#
-				pid.new <- pid.new + 1;#
-				pid.lst.tmp[child2.idx] <- pid.new;#
-				rules.tmp <- rbind(rules.tmp,#
-					data.frame(pid=pid.new, #
-					rule=append.rule(rules[pid.old,2],r.var,r.value,">"),#
-					minor.class=class.ratio(y[child2.idx],y.lst),#
-					major.class=(1-class.ratio(y[child2.idx],y.lst))));#
-				pid.new <- pid.new + 1;#
-			}#
-		}#
-		pid.lst <- pid.lst.tmp;#
-		rules <- rules.tmp;#
-	}#
-	return(list(minor.class=y.lst[1], major.class=y.lst[2], rules=rules));#
 }
-model <- grow.atree(X,y,0.5,4,F);
-grow.atree <- function(X, y, alpha, depth, c.order){#
-#
-	N <- length(y); # a total number of data samples#
-	pid.lst <- rep(1,N); # a list of partition indeces#
-	y.lst <- sort(unique(y),decreasing=FALSE);#
-	if(class.ratio(y, y.lst) > 0.5){#
-		y.lst <- sort(unique(y),decreasing=TRUE);#
-	}#
-	rules <- data.frame(pid=1, rule="", minor.class=0.0, major.class=1.0);#
-#
-	# Create a finite depth $\alpha$-Tree.#
-	for(d in 1:depth){#
-#
-		n.pid <- length(unique(pid.lst));#
-		rules.tmp <- NULL;#
-		pid.lst.tmp <- rep(1,N);#
-		pid.new <- 1;#
-#
-		# Go over the existing paritions and divide into new partitions.		#
-		for(pid.old in 1:n.pid){#
-#
-			sub.idx <- which(pid.lst==pid.old);#
-			X.sub <- X[sub.idx,];#
-			y.sub <- y[sub.idx];#
-			split.result <- split.variable(X.sub, y.sub, alpha, y.lst);	#
-			feature <- split.result$feature;#
-			value <- split.result$value;#
-			if(is.na(feature)){ # No splitting variable#
-				pid.lst.tmp[sub.idx] <- pid.new;#
-				rules.tmp <- rbind(rules.tmp, #
-									data.frame(pid=pid.new, #
-									rule=rules[pid.old,"rule"],#
-									minor.class=rules[pid.old,"minor.class"],#
-									major.class=rules[pid.old,"major.class"]));#
-				pid.new <- pid.new + 1;				#
-			}else{ # Split.#
-				r.var <- as.character(colnames(X)[feature]);#
-				r.value <- as.character(value);#
-				child1.idx <- sub.idx[which(X.sub[,feature] <= value)];#
-				child2.idx <- sub.idx[which(X.sub[,feature] > value)];#
-				pid.lst.tmp[child1.idx] <- pid.new;#
-				rules.tmp <- rbind(rules.tmp,#
-					data.frame(pid=pid.new, #
-					rule=append.rule(rules[pid.old,2],r.var,r.value,"<="),#
-					minor.class=class.ratio(y[child1.idx],y.lst),#
-					major.class=(1-class.ratio(y[child1.idx],y.lst))));#
-				pid.new <- pid.new + 1;#
-				pid.lst.tmp[child2.idx] <- pid.new;#
-				rules.tmp <- rbind(rules.tmp,#
-					data.frame(pid=pid.new, #
-					rule=append.rule(rules[pid.old,2],r.var,r.value,">"),#
-					minor.class=class.ratio(y[child2.idx],y.lst),#
-					major.class=(1-class.ratio(y[child2.idx],y.lst))));#
-				pid.new <- pid.new + 1;#
-			}#
-		}#
-		pid.lst <- pid.lst.tmp;#
-		rules <- rules.tmp;#
-	}#
-	return(list(minor.class=y.lst[1], major.class=y.lst[2], rules=rules));#
+max.depth
+rm <- matrix(0, nrow=nrow(at), ncol=max.depth);
+rm
+rm <- matrix(0, nrow=nrow(at), ncol=max.depth);#
+for(i in 1:nrow(at)){#
+	elem <- strsplit(as.character(at[i,"rule"]),split=" & ")[[1]];#
+	rm[i,1:length(elem)] <- elem; #
 }
-model <- grow.atree(X,y,0.5,4,F);
-model
-grow.atree <- function(X, y, alpha, depth, c.order){#
-#
-	N <- length(y); # a total number of data samples#
-	pid.lst <- rep(1,N); # a list of partition indeces#
-	y.lst <- sort(unique(y),decreasing=FALSE);#
-	if(class.ratio(y, y.lst) > 0.5){#
-		y.lst <- sort(unique(y),decreasing=TRUE);#
-	}#
-	minor.class <- class.ratio(y.y.lst);#
-	major.class <- 1 - minor.class;	#
-	rules <- data.frame(pid=1, rule="", minor.class=minor.class, major.class=major.class, size=N);#
-#
-	# Create a finite depth $\alpha$-Tree.#
-	for(d in 1:depth){#
-#
-		n.pid <- length(unique(pid.lst));#
-		rules.tmp <- NULL;#
-		pid.lst.tmp <- rep(1,N);#
-		pid.new <- 1;#
-#
-		# Go over the existing paritions and divide into new partitions.		#
-		for(pid.old in 1:n.pid){#
-#
-			sub.idx <- which(pid.lst==pid.old);#
-			X.sub <- X[sub.idx,];#
-			y.sub <- y[sub.idx];#
-			split.result <- split.variable(X.sub, y.sub, alpha, y.lst);	#
-			feature <- split.result$feature;#
-			value <- split.result$value;#
-			if(is.na(feature)){ # No splitting variable#
-				pid.lst.tmp[sub.idx] <- pid.new;#
-				rules.tmp <- rbind(rules.tmp, #
-									data.frame(pid=pid.new, #
-									rule=rules[pid.old,"rule"],#
-									minor.class=rules[pid.old,"minor.class"],#
-									major.class=rules[pid.old,"major.class"],#
-									size=length(sub.idx)));#
-				pid.new <- pid.new + 1;				#
-			}else{ # Split.#
-				r.var <- as.character(colnames(X)[feature]);#
-				r.value <- as.character(value);#
-				child1.idx <- sub.idx[which(X.sub[,feature] <= value)];#
-				child2.idx <- sub.idx[which(X.sub[,feature] > value)];#
-				pid.lst.tmp[child1.idx] <- pid.new;#
-				minor.class.1 <- class.ratio(y[child1.idx],y.lst);#
-				major.class.1 <- 1 - minor.class;	#
-				rules.tmp <- rbind(rules.tmp,#
-					data.frame(pid=pid.new, #
-					rule=append.rule(rules[pid.old,2],r.var,r.value,"<="),#
-					minor.class=minor.class.1,#
-					major.class=major.class.1,#
-					size=length(child1.idx)));#
-				pid.new <- pid.new + 1;#
-				pid.lst.tmp[child2.idx] <- pid.new;#
-				minor.class.2 <- class.ratio(y[child2.idx],y.lst);#
-				major.class.2 <- 1 - minor.class;	#
-				rules.tmp <- rbind(rules.tmp,#
-					data.frame(pid=pid.new, #
-					rule=append.rule(rules[pid.old,2],r.var,r.value,">"),#
-					minor.class=minor.class.2,#
-					major.class=major.class.2,#
-					size=length(child2.idx)));#
-				pid.new <- pid.new + 1;#
-			}#
-		}#
-		pid.lst <- pid.lst.tmp;#
-		rules <- rules.tmp;#
-	}#
-	return(list(minor.class=y.lst[1], major.class=y.lst[2], rules=rules));#
+rm
+rm <- matrix(NA, nrow=nrow(at), ncol=(max.depth+1));#
+for(i in 1:nrow(at)){#
+	elem <- strsplit(as.character(at[i,"rule"]),split=" & ")[[1]];#
+	rm[i,1:length(elem)] <- elem; #
+	rm[i,(length(elem))] <- at[i,"minor.class"];#
 }
-model <- grow.atree(X,y,0.5,4,F);
-grow.atree <- function(X, y, alpha, depth, c.order){#
-#
-	N <- length(y); # a total number of data samples#
-	pid.lst <- rep(1,N); # a list of partition indeces#
-	y.lst <- sort(unique(y),decreasing=FALSE);#
-	if(class.ratio(y, y.lst) > 0.5){#
-		y.lst <- sort(unique(y),decreasing=TRUE);#
-	}#
-	minor.class <- class.ratio(y.lst);#
-	major.class <- 1 - minor.class;	#
-	rules <- data.frame(pid=1, rule="", minor.class=minor.class, major.class=major.class, size=N);#
-#
-	# Create a finite depth $\alpha$-Tree.#
-	for(d in 1:depth){#
-#
-		n.pid <- length(unique(pid.lst));#
-		rules.tmp <- NULL;#
-		pid.lst.tmp <- rep(1,N);#
-		pid.new <- 1;#
-#
-		# Go over the existing paritions and divide into new partitions.		#
-		for(pid.old in 1:n.pid){#
-#
-			sub.idx <- which(pid.lst==pid.old);#
-			X.sub <- X[sub.idx,];#
-			y.sub <- y[sub.idx];#
-			split.result <- split.variable(X.sub, y.sub, alpha, y.lst);	#
-			feature <- split.result$feature;#
-			value <- split.result$value;#
-			if(is.na(feature)){ # No splitting variable#
-				pid.lst.tmp[sub.idx] <- pid.new;#
-				rules.tmp <- rbind(rules.tmp, #
-									data.frame(pid=pid.new, #
-									rule=rules[pid.old,"rule"],#
-									minor.class=rules[pid.old,"minor.class"],#
-									major.class=rules[pid.old,"major.class"],#
-									size=length(sub.idx)));#
-				pid.new <- pid.new + 1;				#
-			}else{ # Split.#
-				r.var <- as.character(colnames(X)[feature]);#
-				r.value <- as.character(value);#
-				child1.idx <- sub.idx[which(X.sub[,feature] <= value)];#
-				child2.idx <- sub.idx[which(X.sub[,feature] > value)];#
-				pid.lst.tmp[child1.idx] <- pid.new;#
-				minor.class.1 <- class.ratio(y[child1.idx],y.lst);#
-				major.class.1 <- 1 - minor.class;	#
-				rules.tmp <- rbind(rules.tmp,#
-					data.frame(pid=pid.new, #
-					rule=append.rule(rules[pid.old,2],r.var,r.value,"<="),#
-					minor.class=minor.class.1,#
-					major.class=major.class.1,#
-					size=length(child1.idx)));#
-				pid.new <- pid.new + 1;#
-				pid.lst.tmp[child2.idx] <- pid.new;#
-				minor.class.2 <- class.ratio(y[child2.idx],y.lst);#
-				major.class.2 <- 1 - minor.class;	#
-				rules.tmp <- rbind(rules.tmp,#
-					data.frame(pid=pid.new, #
-					rule=append.rule(rules[pid.old,2],r.var,r.value,">"),#
-					minor.class=minor.class.2,#
-					major.class=major.class.2,#
-					size=length(child2.idx)));#
-				pid.new <- pid.new + 1;#
-			}#
-		}#
-		pid.lst <- pid.lst.tmp;#
-		rules <- rules.tmp;#
-	}#
-	return(list(minor.class=y.lst[1], major.class=y.lst[2], rules=rules));#
+rm
+rm <- matrix(NA, nrow=nrow(at), ncol=(max.depth+1));#
+for(i in 1:nrow(at)){#
+	elem <- strsplit(as.character(at[i,"rule"]),split=" & ")[[1]];#
+	rm[i,1:length(elem)] <- elem; #
+	rm[i,(length(elem)+1)] <- at[i,"minor.class"];#
 }
-model <- grow.atree(X,y,0.5,4,F);
-grow.atree <- function(X, y, alpha, depth, c.order){#
-#
-	N <- length(y); # a total number of data samples#
-	pid.lst <- rep(1,N); # a list of partition indeces#
-	y.lst <- sort(unique(y),decreasing=FALSE);#
-	if(class.ratio(y, y.lst) > 0.5){#
-		y.lst <- sort(unique(y),decreasing=TRUE);#
-	}#
-	minor.class <- class.ratio(y, y.lst);#
-	major.class <- 1 - minor.class;	#
-	rules <- data.frame(pid=1, rule="", minor.class=minor.class, major.class=major.class, size=N);#
-#
-	# Create a finite depth $\alpha$-Tree.#
-	for(d in 1:depth){#
-#
-		n.pid <- length(unique(pid.lst));#
-		rules.tmp <- NULL;#
-		pid.lst.tmp <- rep(1,N);#
-		pid.new <- 1;#
-#
-		# Go over the existing paritions and divide into new partitions.		#
-		for(pid.old in 1:n.pid){#
-#
-			sub.idx <- which(pid.lst==pid.old);#
-			X.sub <- X[sub.idx,];#
-			y.sub <- y[sub.idx];#
-			split.result <- split.variable(X.sub, y.sub, alpha, y.lst);	#
-			feature <- split.result$feature;#
-			value <- split.result$value;#
-			if(is.na(feature)){ # No splitting variable#
-				pid.lst.tmp[sub.idx] <- pid.new;#
-				rules.tmp <- rbind(rules.tmp, #
-									data.frame(pid=pid.new, #
-									rule=rules[pid.old,"rule"],#
-									minor.class=rules[pid.old,"minor.class"],#
-									major.class=rules[pid.old,"major.class"],#
-									size=length(sub.idx)));#
-				pid.new <- pid.new + 1;				#
-			}else{ # Split.#
-				r.var <- as.character(colnames(X)[feature]);#
-				r.value <- as.character(value);#
-				child1.idx <- sub.idx[which(X.sub[,feature] <= value)];#
-				child2.idx <- sub.idx[which(X.sub[,feature] > value)];#
-				pid.lst.tmp[child1.idx] <- pid.new;#
-				minor.class.1 <- class.ratio(y[child1.idx],y.lst);#
-				major.class.1 <- 1 - minor.class;	#
-				rules.tmp <- rbind(rules.tmp,#
-					data.frame(pid=pid.new, #
-					rule=append.rule(rules[pid.old,2],r.var,r.value,"<="),#
-					minor.class=minor.class.1,#
-					major.class=major.class.1,#
-					size=length(child1.idx)));#
-				pid.new <- pid.new + 1;#
-				pid.lst.tmp[child2.idx] <- pid.new;#
-				minor.class.2 <- class.ratio(y[child2.idx],y.lst);#
-				major.class.2 <- 1 - minor.class;	#
-				rules.tmp <- rbind(rules.tmp,#
-					data.frame(pid=pid.new, #
-					rule=append.rule(rules[pid.old,2],r.var,r.value,">"),#
-					minor.class=minor.class.2,#
-					major.class=major.class.2,#
-					size=length(child2.idx)));#
-				pid.new <- pid.new + 1;#
-			}#
-		}#
-		pid.lst <- pid.lst.tmp;#
-		rules <- rules.tmp;#
-	}#
-	return(list(minor.class=y.lst[1], major.class=y.lst[2], rules=rules));#
+rm
+rm <- matrix(NA, nrow=nrow(at), ncol=(max.depth+1));#
+for(i in 1:nrow(at)){#
+	elem <- strsplit(as.character(at[i,"rule"]),split=" & ")[[1]];#
+	rm[i,1:length(elem)] <- elem;#
+	info <- list(size = at[1,"size"],#
+				 minor.class = at[1,"minor.class"],#
+				 major.class = at[1,"major.class"]);  #
+	rm[i,(length(elem)+1)] <- toJSON(info);#
 }
-model <- grow.atree(X,y,0.5,4,F);
-model
-grow.atree <- function(X, y, alpha, depth, c.order){#
-#
-	N <- length(y); # a total number of data samples#
-	pid.lst <- rep(1,N); # a list of partition indeces#
-	y.lst <- sort(unique(y),decreasing=FALSE);#
-	if(class.ratio(y, y.lst) > 0.5){#
-		y.lst <- sort(unique(y),decreasing=TRUE);#
-	}#
-	minor.class <- class.ratio(y, y.lst);#
-	major.class <- 1 - minor.class;	#
-	rules <- data.frame(pid=1, rule="", minor.class=minor.class, major.class=major.class, size=N);#
-#
-	# Create a finite depth $\alpha$-Tree.#
-	for(d in 1:depth){#
-#
-		n.pid <- length(unique(pid.lst));#
-		rules.tmp <- NULL;#
-		pid.lst.tmp <- rep(1,N);#
-		pid.new <- 1;#
-#
-		# Go over the existing paritions and divide into new partitions.		#
-		for(pid.old in 1:n.pid){#
-#
-			sub.idx <- which(pid.lst==pid.old);#
-			X.sub <- X[sub.idx,];#
-			y.sub <- y[sub.idx];#
-			split.result <- split.variable(X.sub, y.sub, alpha, y.lst);	#
-			feature <- split.result$feature;#
-			value <- split.result$value;#
-			if(is.na(feature)){ # No splitting variable#
-				pid.lst.tmp[sub.idx] <- pid.new;#
-				rules.tmp <- rbind(rules.tmp, #
-									data.frame(pid=pid.new, #
-									rule=rules[pid.old,"rule"],#
-									minor.class=rules[pid.old,"minor.class"],#
-									major.class=rules[pid.old,"major.class"],#
-									size=length(sub.idx)));#
-				pid.new <- pid.new + 1;				#
-			}else{ # Split.#
-				r.var <- as.character(colnames(X)[feature]);#
-				r.value <- as.character(value);#
-				child1.idx <- sub.idx[which(X.sub[,feature] <= value)];#
-				child2.idx <- sub.idx[which(X.sub[,feature] > value)];#
-				pid.lst.tmp[child1.idx] <- pid.new;#
-				minor.class.1 <- class.ratio(y[child1.idx],y.lst);#
-				major.class.1 <- 1 - minor.class.1;	#
-				rules.tmp <- rbind(rules.tmp,#
-					data.frame(pid=pid.new, #
-					rule=append.rule(rules[pid.old,2],r.var,r.value,"<="),#
-					minor.class=minor.class.1,#
-					major.class=major.class.1,#
-					size=length(child1.idx)));#
-				pid.new <- pid.new + 1;#
-				pid.lst.tmp[child2.idx] <- pid.new;#
-				minor.class.2 <- class.ratio(y[child2.idx],y.lst);#
-				major.class.2 <- 1 - minor.class.2;	#
-				rules.tmp <- rbind(rules.tmp,#
-					data.frame(pid=pid.new, #
-					rule=append.rule(rules[pid.old,2],r.var,r.value,">"),#
-					minor.class=minor.class.2,#
-					major.class=major.class.2,#
-					size=length(child2.idx)));#
-				pid.new <- pid.new + 1;#
-			}#
-		}#
-		pid.lst <- pid.lst.tmp;#
-		rules <- rules.tmp;#
-	}#
-	return(list(minor.class=y.lst[1], major.class=y.lst[2], rules=rules));#
+rm
+ruma <- matrix(NA, nrow=nrow(at), ncol=(max.depth+1));#
+for(i in 1:nrow(at)){#
+	elem <- strsplit(as.character(at[i,"rule"]),split=" & ")[[1]];#
+	ruma[i,1:length(elem)] <- elem;#
+	info <- list(size = at[1,"size"],#
+				 minor.class = at[1,"minor.class"],#
+				 major.class = at[1,"major.class"]);  #
+	ruma[i,(length(elem)+1)] <- toJSON(info);#
 }
-model <- grow.atree(X,y,0.5,4,F);
-model
-grow.atree <- function(X, y, alpha, depth){#
-#
-	N <- length(y); # a total number of data samples#
-	pid.lst <- rep(1,N); # a list of partition indeces#
-	y.lst <- sort(unique(y),decreasing=FALSE);#
-	if(class.ratio(y, y.lst) > 0.5){#
-		y.lst <- sort(unique(y),decreasing=TRUE);#
+ruma
+construct.jsontree <- function(ruma, cid){#
+	tree <- list();	#
+	rule <- unique(ruma[,cid]);#
+	if (length(rule)==1){#
+		return(list(node=ruma[,cid+1]));	#
+	}else{#
+		lsub <- ruma[which(ruma[,cid]==rule[1]),];#
+		rsub <- ruma[which(ruma[,cid]==rule[2]),];	#
+		tree <- list(left=construct.jsontree(lsub, cid+1),#
+					right=construct.jsontree(rsub, cid+1));#
+		names(tree) <- c(rule[1], rule[2]);#
 	}#
-	minor.class <- class.ratio(y, y.lst);#
-	major.class <- 1 - minor.class;	#
-	rules <- data.frame(pid=1, rule="", minor.class=minor.class, major.class=major.class, size=N);#
-#
-	# Create a finite depth $\alpha$-Tree.#
-	for(d in 1:depth){#
-#
-		n.pid <- length(unique(pid.lst));#
-		rules.tmp <- NULL;#
-		pid.lst.tmp <- rep(1,N);#
-		pid.new <- 1;#
-#
-		# Go over the existing paritions and divide into new partitions.		#
-		for(pid.old in 1:n.pid){#
-#
-			sub.idx <- which(pid.lst==pid.old);#
-			X.sub <- X[sub.idx,];#
-			y.sub <- y[sub.idx];#
-			split.result <- split.variable(X.sub, y.sub, alpha, y.lst);	#
-			feature <- split.result$feature;#
-			value <- split.result$value;#
-			if(is.na(feature)){ # No splitting variable#
-				pid.lst.tmp[sub.idx] <- pid.new;#
-				rules.tmp <- rbind(rules.tmp, #
-									data.frame(pid=pid.new, #
-									rule=rules[pid.old,"rule"],#
-									minor.class=rules[pid.old,"minor.class"],#
-									major.class=rules[pid.old,"major.class"],#
-									size=length(sub.idx)));#
-				pid.new <- pid.new + 1;				#
-			}else{ # Split.#
-				r.var <- as.character(colnames(X)[feature]);#
-				r.value <- as.character(value);#
-				child1.idx <- sub.idx[which(X.sub[,feature] <= value)];#
-				child2.idx <- sub.idx[which(X.sub[,feature] > value)];#
-				pid.lst.tmp[child1.idx] <- pid.new;#
-				minor.class.1 <- class.ratio(y[child1.idx],y.lst);#
-				major.class.1 <- 1 - minor.class.1;	#
-				rules.tmp <- rbind(rules.tmp,#
-					data.frame(pid=pid.new, #
-						rule=append.rule(rules[pid.old,2],r.var,r.value,"<="),#
-						minor.class=minor.class.1, major.class=major.class.1,#
-						size=length(child1.idx)));#
-				pid.new <- pid.new + 1;#
-				pid.lst.tmp[child2.idx] <- pid.new;#
-				minor.class.2 <- class.ratio(y[child2.idx],y.lst);#
-				major.class.2 <- 1 - minor.class.2;	#
-				rules.tmp <- rbind(rules.tmp,#
-					data.frame(pid=pid.new, #
-					rule=append.rule(rules[pid.old,2],r.var,r.value,">"),#
-					minor.class=minor.class.2, major.class=major.class.2,#
-					size=length(child2.idx)));#
-				pid.new <- pid.new + 1;#
-			}#
-		}#
-		pid.lst <- pid.lst.tmp;#
-		rules <- rules.tmp;#
+	return(tree);#
+}
+construct.jsontree(ruma,1)
+ruma[,1]
+construct.jsontree <- function(ruma, cid){#
+	tree <- list();	#
+	rule <- unique(ruma[,cid]);#
+	if (length(rule)==1){#
+		print(ruma)#
+		return(list(node=ruma[,cid+1]));	#
+	}else{#
+		print(ruma)#
+		lsub <- ruma[which(ruma[,cid]==rule[1]),];#
+		rsub <- ruma[which(ruma[,cid]==rule[2]),];	#
+		tree <- list(left=construct.jsontree(lsub, cid+1),#
+					right=construct.jsontree(rsub, cid+1));#
+		names(tree) <- c(rule[1], rule[2]);#
 	}#
-	return(list(minor.class=y.lst[1], major.class=y.lst[2], rules=rules));#
+	return(tree);#
+}
+ruma[,1]
+construct.jsontree(ruma,1)
+ruma
+ruma <- matrix(NA, nrow=nrow(at), ncol=(max.depth+1));#
+for(i in 1:nrow(at)){#
+	elem <- strsplit(as.character(at[i,"rule"]),split=" & ")[[1]];#
+	ruma[i,1:length(elem)] <- elem;#
+	info <- list(size = at[i,"size"],#
+				 minor.class = at[i,"minor.class"],#
+				 major.class = at[i,"major.class"]);  #
+	ruma[i,(length(elem)+1)] <- toJSON(info);#
 }#
 #
-predict.atree <- function(newdata, rules){#
-	df <- as.data.frame(newdata);#
-	n.rules <- nrow(rules);#
-	N <- nrow(newdata);#
-	minor.class <- rep(0,N);#
-	major.class <- rep(1,N);#
-#
-	for(i in 1:n.rules){#
-		idx <- eval(parse(text=as.character(rules[i,"rule"])),envir=df);#
-		minor.class[idx] <- rules[i,"minor.class"];#
-		major.class[idx] <- rules[i,"major.class"];#
+construct.jsontree <- function(ruma, cid){#
+	tree <- list();	#
+	rule <- unique(ruma[,cid]);#
+	if (length(rule)==1){#
+		print(ruma)#
+		return(list(node=ruma[,cid+1]));	#
+	}else{#
+		print(ruma)#
+		lsub <- ruma[which(ruma[,cid]==rule[1]),];#
+		rsub <- ruma[which(ruma[,cid]==rule[2]),];	#
+		tree <- list(left=construct.jsontree(lsub, cid+1),#
+					right=construct.jsontree(rsub, cid+1));#
+		names(tree) <- c(rule[1], rule[2]);#
 	}#
-	return(list(minor.class,major.class))#
+	return(tree);#
 }
-model <- grow.atree(X, y, 0.5,4);#
-pred <- predict.atree(X, model$rules);
-pred
-require(ROCR);
-model <- grow.atree(X, y, 0.5,4);#
-pred <- predict.atree(X, model$rules);
-model <- grow.atree(X, y, 0.5,4);#
-alpha.pred <- predict.atree(X, model$rules);#
-#
-rocr.pred <- prediction(alpha.pred$minor.class, y);#
-rocr.perf <- performance(rocr.pred, "tpr", "fpr");#
-plot(rocr.perf);
-alpha.pred$minor.class
-predict.atree <- function(newdata, rules){#
-	# Predicts#
-	# Args:#
-	#		newdata: feature matrix#
-	#		rules: existing rules#
-	# Returns:#
-	#	A prediction vector.#
-	df <- as.data.frame(newdata);#
-	n.rules <- nrow(rules);#
-	N <- nrow(newdata);#
-	minor.class <- rep(0,N);#
-	major.class <- rep(1,N);#
-#
-	for(i in 1:n.rules){#
-		idx <- eval(parse(text=as.character(rules[i,"rule"])),envir=df);#
-		minor.class[idx] <- rules[i,"minor.class"];#
-		major.class[idx] <- rules[i,"major.class"];#
+construct.jsontree(ruma,1)
+construct.jsontree <- function(ruma, cid){#
+	tree <- list();	#
+	rule <- unique(ruma[,cid]);#
+	if (length(rule)==1){#
+		print(cid)#
+		print(ruma)#
+		return(list(node=ruma[,cid+1]));	#
+	}else{#
+		print(ruma)#
+		lsub <- ruma[which(ruma[,cid]==rule[1]),];#
+		rsub <- ruma[which(ruma[,cid]==rule[2]),];	#
+		tree <- list(left=construct.jsontree(lsub, cid+1),#
+					right=construct.jsontree(rsub, cid+1));#
+		names(tree) <- c(rule[1], rule[2]);#
 	}#
-	return(list(minor.class=minor.class, major.class=major.class))#
+	return(tree);#
 }
-model <- grow.atree(X, y, 0.5,4);#
-alpha.pred <- predict.atree(X, model$rules);#
+construct.jsontree(ruma,1)
+construct.jsontree <- function(ruma, cid){#
+	tree <- list();	#
+	rule <- unique(ruma[,cid]);#
+	if (length(rule)==1){#
+		print(ruma)#
+		return(list(node=ruma[,cid+1]));	#
+	}else{#
+		print(cid)#
+		print(ruma)#
+		lsub <- ruma[which(ruma[,cid]==rule[1]),];#
+		rsub <- ruma[which(ruma[,cid]==rule[2]),];	#
+		tree <- list(left=construct.jsontree(lsub, cid+1),#
+					right=construct.jsontree(rsub, cid+1));#
+		names(tree) <- c(rule[1], rule[2]);#
+	}#
+	return(tree);#
+}
+construct.jsontree(ruma,1)
+construct.jsontree <- function(ruma, cid){#
+	tree <- list();	#
+	rule <- unique(ruma[,cid]);#
+	if (length(rule)==1){#
+		print(ruma)#
+		return(list(node=ruma[,cid]));	#
+	}else{#
+		print(cid)#
+		print(ruma)#
+		lsub <- ruma[which(ruma[,cid]==rule[1]),];#
+		rsub <- ruma[which(ruma[,cid]==rule[2]),];	#
+		tree <- list(left=construct.jsontree(lsub, cid+1),#
+					right=construct.jsontree(rsub, cid+1));#
+		names(tree) <- c(rule[1], rule[2]);#
+	}#
+	return(tree);#
+}
+construct.jsontree(ruma,1)
+construct.jsontree <- function(ruma, cid){#
+	tree <- list();	#
+	rule <- unique(ruma[,cid]);#
+	if (length(rule)==1){#
+		print('node')#
+		return(list(node=ruma[,cid]));	#
+	}else{#
+		print(cid)#
+		print(ruma)#
+		lsub <- ruma[which(ruma[,cid]==rule[1]),];#
+		rsub <- ruma[which(ruma[,cid]==rule[2]),];	#
+		tree <- list(left=construct.jsontree(lsub, cid+1),#
+					right=construct.jsontree(rsub, cid+1));#
+		names(tree) <- c(rule[1], rule[2]);#
+	}#
+	return(tree);#
+}
+construct.jsontree(ruma,1)
+construct.jsontree <- function(ruma, cid){#
+	tree <- list();	#
+	rule <- unique(ruma[,cid]);#
+	if (length(rule)==1){#
+		print('node')#
+		return(list(node=ruma[,cid+1]));	#
+	}else{#
+		print(cid)#
+		print(ruma)#
+		lsub <- ruma[which(ruma[,cid]==rule[1]),,drop=F];#
+		rsub <- ruma[which(ruma[,cid]==rule[2]),,drop=F];	#
+		tree <- list(left=construct.jsontree(lsub, cid+1),#
+					right=construct.jsontree(rsub, cid+1));#
+		names(tree) <- c(rule[1], rule[2]);#
+	}#
+	return(tree);#
+}
+construct.jsontree(ruma,1)
+construct.jsontree <- function(ruma, cid){#
+	tree <- list();	#
+	rule <- unique(ruma[,cid]);#
+	if (length(rule)==1){#
+		print('node')#
+		return(list(node=ruma[,cid]));	#
+	}else{#
+		print(cid)#
+		print(ruma)#
+		lsub <- ruma[which(ruma[,cid]==rule[1]),,drop=F];#
+		rsub <- ruma[which(ruma[,cid]==rule[2]),,drop=F];	#
+		tree <- list(left=construct.jsontree(lsub, cid+1),#
+					right=construct.jsontree(rsub, cid+1));#
+		names(tree) <- c(rule[1], rule[2]);#
+	}#
+	return(tree);#
+}
+construct.jsontree(ruma,1)
+construct.jsontree <- function(ruma, cid){#
+	tree <- list();	#
+	rule <- unique(ruma[,cid]);#
+	if (length(rule)==1){#
+		return(list(node=ruma[,cid]));	#
+	}else{#
+		lsub <- ruma[which(ruma[,cid]==rule[1]),,drop=F];#
+		rsub <- ruma[which(ruma[,cid]==rule[2]),,drop=F];	#
+		tree <- list(left=construct.jsontree(lsub, cid+1),#
+					right=construct.jsontree(rsub, cid+1));#
+		names(tree) <- c(rule[1], rule[2]);#
+	}#
+	return(tree);#
+}
+construct.jsontree(ruma,1)
+tree <- construct.jsontree(ruma,1);#
 #
-rocr.pred <- prediction(alpha.pred$minor.class, y);#
-rocr.perf <- performance(rocr.pred, "tpr", "fpr");#
-plot(rocr.perf);
-minor.class <- model$minor.class;
-minor.class
-(y==minor.class)
-P <- 1000;#
-N <- 2000;#
-synth <- data.frame(x.1 = rnorm(N,0,0.8),x.2 = rnorm(P,1,1), class="pos");#
-synth <- rbind(synth,data.frame(x.1= rnorm(N,-1,2),x.2=rnorm(N,-1,2),class="neg"));#
-X <- model.matrix(class~.,data=synth);#
-y <- as.factor(synth[,"class"]);#
-model <- grow.atree(X, y, 0.5,4);#
-minor.class <- model$minor.class;#
-alpha.pred <- predict.atree(X, model$rules);#
-rocr.pred <- prediction(alpha.pred$minor.class, (y==minor.class));#
-rocr.perf <- performance(rocr.pred, "tpr", "fpr");#
-plot(rocr.perf);
-P <- 1000;#
-N <- 2000;#
-synth <- data.frame(x.1 = rnorm(N,0,0.8),x.2 = rnorm(P,1,1), class="pos");#
-synth <- rbind(synth,data.frame(x.1= rnorm(N,-1,2),x.2=rnorm(N,-1,2),class="neg"));#
-X <- model.matrix(class~.,data=synth);#
-y <- as.factor(synth[,"class"]);#
-model <- grow.atree(X, y, 0.5,4);#
-minor.class <- model$minor.class;#
-alpha.pred <- predict.atree(X, model$rules);#
-rocr.pred <- prediction(alpha.pred$minor.class, (y==minor.class));#
-rocr.perf <- performance(rocr.pred, "tpr", "fpr");#
-plot(rocr.perf);
-model
-require(rpart);
-ls()
-car.test.frame
-kyphosis
-X <- model.matrix(Kyphosis ~ ., data=kyphosis)
-X
-y <- kyphosis[,"Kyphosis"];
-y
-model <- grow.atree(X, y, 0.5,4);#
-minor.class <- model$minor.class;#
-alpha.pred <- predict.atree(X, model$rules);#
-rocr.pred <- prediction(alpha.pred$minor.class, (y==minor.class));#
-rocr.perf <- performance(rocr.pred, "tpr", "fpr");#
-plot(rocr.perf);
-model <- grow.atree(X, y, 1.0, 4);#
-minor.class <- model$minor.class;#
-alpha.pred <- predict.atree(X, model$rules);#
-rocr.pred <- prediction(alpha.pred$minor.class, (y==minor.class));#
-rocr.perf <- performance(rocr.pred, "tpr", "fpr");#
-plot(rocr.perf);
-model <- grow.atree(X, y, 0.0, 4);#
-minor.class <- model$minor.class;#
-alpha.pred <- predict.atree(X, model$rules);#
-rocr.pred <- prediction(alpha.pred$minor.class, (y==minor.class));#
-rocr.perf <- performance(rocr.pred, "tpr", "fpr");#
-plot(rocr.perf);
-model <- grow.atree(X, y, 2.0, 4);#
-minor.class <- model$minor.class;#
-alpha.pred <- predict.atree(X, model$rules);#
-rocr.pred <- prediction(alpha.pred$minor.class, (y==minor.class));#
-rocr.perf <- performance(rocr.pred, "tpr", "fpr");#
-plot(rocr.perf);
-model <- grow.atree(X, y, 2.0, 2);#
-minor.class <- model$minor.class;#
-alpha.pred <- predict.atree(X, model$rules);#
-rocr.pred <- prediction(alpha.pred$minor.class, (y==minor.class));#
-rocr.perf <- performance(rocr.pred, "tpr", "fpr");#
-plot(rocr.perf);
-model
-car.test.frame
-reuiqre(datasets)
-require(datasets)
-iris
-iris3
-freeny
-esohp
-esoph
-airquality
-print(model)
+toJSON(tree)
+ruma
+ruma[1,4]
+construct.jsontree <- function(ruma, cid){#
+	tree <- list();	#
+	rule <- unique(ruma[,cid]);#
+	if (length(rule)==1){#
+		return(ruma[,cid]);	#
+	}else{#
+		lsub <- ruma[which(ruma[,cid]==rule[1]),,drop=F];#
+		rsub <- ruma[which(ruma[,cid]==rule[2]),,drop=F];	#
+		tree <- list(left=construct.jsontree(lsub, cid+1),#
+					right=construct.jsontree(rsub, cid+1));#
+		names(tree) <- c(rule[1], rule[2]);#
+	}#
+	return(tree);#
+}#
+#
+tree <- construct.jsontree(ruma,1);#
+#
+toJSON(tree)
+Learn-by-examples#
+# Author: Yubin Park#
+# Contact: yubin.park@utexas.edu#
+# Last Modified: Apr 25th, 2013#
+###################################
+#
+library(rjson);#
+source("alphaTree.R");#
+#
+df <- read.csv('pima-indians-diabetes.data',header=F)#
+#
+y <- df[,ncol(df)]#
+X <- df[,1:(ncol(df)-1)]#
+#
+at <- grow.atree(X, y, 0.1, 3)$rules#
+#
+max.depth <- 0;#
+for(i in 1:nrow(at)){#
+	elem <- strsplit(as.character(at[i,"rule"]),split=" & ")[[1]];#
+	if( max.depth < length(elem) ){#
+		max.depth <- length(elem);#
+	}#
+}#
+ruma <- matrix(NA, nrow=nrow(at), ncol=(max.depth+1));#
+for(i in 1:nrow(at)){#
+	elem <- strsplit(as.character(at[i,"rule"]),split=" & ")[[1]];#
+	ruma[i,1:length(elem)] <- elem;#
+	info <- list(size = at[i,"size"],#
+				 minor.class = at[i,"minor.class"],#
+				 major.class = at[i,"major.class"]);  #
+	ruma[i,(length(elem)+1)] <- toJSON(info);#
+}#
+#
+construct.jsontree <- function(ruma, cid){#
+	tree <- list();	#
+	rule <- unique(ruma[,cid]);#
+	if (length(rule)==1){#
+		return(ruma[,cid]);	#
+	}else{#
+		lsub <- ruma[which(ruma[,cid]==rule[1]),,drop=F];#
+		rsub <- ruma[which(ruma[,cid]==rule[2]),,drop=F];	#
+		tree <- list(left=construct.jsontree(lsub, cid+1),#
+					right=construct.jsontree(rsub, cid+1));#
+		names(tree) <- c(rule[1], rule[2]);#
+	}#
+	return(tree);#
+}#
+#
+tree <- construct.jsontree(ruma,1);#
+#
+toJSON(tree)
+cat(toJSON(tree))
+ruma <- matrix(NA, nrow=nrow(at), ncol=(max.depth+1));#
+for(i in 1:nrow(at)){#
+	elem <- strsplit(as.character(at[i,"rule"]),split=" & ")[[1]];#
+	ruma[i,1:length(elem)] <- elem;#
+	info <- at[i,"minor.class"];#
+	ruma[i,(length(elem)+1)] <- toJSON(info);#
+}#
+#
+construct.jsontree <- function(ruma, cid){#
+	tree <- list();	#
+	rule <- unique(ruma[,cid]);#
+	if (length(rule)==1){#
+		return(toJSON(ruma[,cid]));	#
+	}else{#
+		lsub <- ruma[which(ruma[,cid]==rule[1]),,drop=F];#
+		rsub <- ruma[which(ruma[,cid]==rule[2]),,drop=F];	#
+		tree <- list(left=construct.jsontree(lsub, cid+1),#
+					right=construct.jsontree(rsub, cid+1));#
+		names(tree) <- c(rule[1], rule[2]);#
+	}#
+	return(tree);#
+}#
+#
+tree <- construct.jsontree(ruma,1);#
+#
+cat(toJSON(tree))
+construct.jsontree <- function(ruma, cid){#
+	tree <- list();	#
+	rule <- unique(ruma[,cid]);#
+	if (length(rule)==1){#
+		return(ruma[,cid]);	#
+	}else{#
+		lsub <- ruma[which(ruma[,cid]==rule[1]),,drop=F];#
+		rsub <- ruma[which(ruma[,cid]==rule[2]),,drop=F];	#
+		tree <- list(left=construct.jsontree(lsub, cid+1),#
+					right=construct.jsontree(rsub, cid+1));#
+		names(tree) <- c(rule[1], rule[2]);#
+	}#
+	return(tree);#
+}#
+#
+tree <- construct.jsontree(ruma,1);#
+#
+cat(toJSON(tree))
+tree
+c(list(1,2),list(1,2))
+c(list(1,2),list(a=1,b=2))
+c(c(list(1,2)),list(a=1,b=2))
+toJSON(c(c(list(b1=1,a1=2)),list(a=1,b=2)))
+cat(toJSON(c(c(list(b1=1,a1=2)),list(a=1,b=2))))
+fout <- file('output.json');#
+writeLines(cat(toJSON(tree)), fout);#
+close(fout)
+fout <- file('output.json');#
+writeLines(toJSON(tree), fout);#
+close(fout)
+fout <- file('output.json');#
+writeLines(paste('var alphaTree=',toJSON(tree),';'), fout);#
+close(fout)
+fout <- file('alphaTree.js');#
+writeLines(paste('var alphaTree=',toJSON(tree),';',sep=""), fout);#
+close(fout)
+library(rjson);#
+source("alphaTree.R");#
+#
+df <- read.csv('pima-indians-diabetes.data',header=F)#
+#
+y <- df[,ncol(df)]#
+X <- df[,1:(ncol(df)-1)]#
+#
+atfit <- grow.atree(X, y, 0.1, 3)#
+output.alphatree(atfit);
+library(rjson);#
+source("alphaTree.R");#
+#
+df <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(df) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- df[,ncol(df)]#
+X <- df[,1:(ncol(df)-1)]#
+#
+atfit <- grow.atree(X, y, 0.1, 3)#
+output.alphatree(atfit);
+atfit <- grow.atree(X, y, 1, 3)#
+output.alphatree(atfit);
+library(rjson);#
+source("alphaTree.R");#
+#
+df <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(df) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- df[,ncol(df)]#
+X <- df[,1:(ncol(df)-1)]#
+#
+atfit <- grow.atree(X, y, 1)#
+output.alphatree(atfit);
+atfit
+library(rjson);#
+source("alphaTree.R");#
+#
+df <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(df) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- df[,ncol(df)]#
+X <- df[,1:(ncol(df)-1)]#
+#
+atfit <- grow.atree(X, y, 1)#
+output.alphatree(atfit);
+atfit
+library(rjson);#
+source("alphaTree.R");#
+#
+df <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(df) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- df[,ncol(df)]#
+X <- df[,1:(ncol(df)-1)]#
+#
+atfit <- grow.atree(X, y, 1)#
+output.alphatree(atfit);
+atfit
+library(rjson);#
+source("alphaTree.R");#
+#
+df <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(df) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- df[,ncol(df)]#
+X <- df[,1:(ncol(df)-1)]#
+#
+atfit <- grow.atree(X, y, 1)#
+output.alphatree(atfit);
+atfit
+source("alphaTree.R");#
+#
+df <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(df) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- df[,ncol(df)]#
+X <- df[,1:(ncol(df)-1)]#
+#
+atfit <- grow.atree(X, y, 1)#
+output.alphatree(atfit);
+atfit <- grow.atree(X, y, 2)#
+output.alphatree(atfit);
+atfit <- grow.atree(X, y, 0)#
+output.alphatree(atfit);
+atfit <- grow.atree(X, y, 0, 2)#
+output.alphatree(atfit);
+atfit <- grow.atree(X, y, 1, 2)#
+output.alphatree(atfit);
+atfit <- grow.atree(X, y, 2, 2)#
+output.alphatree(atfit);
+atfit <- grow.atree(X, y, 4, 2)#
+output.alphatree(atfit);
+atfit <- grow.atree(X, y, 1, 3)#
+output.alphatree(atfit);
+?paste0
+source("alphaTree.R");#
+#
+df <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(df) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- df[,ncol(df)]#
+X <- df[,1:(ncol(df)-1)]#
+#
+atfit <- grow.atree(X, y, 1, 3)#
+output.alphatree(atfit);
+at
+atfit
+source("alphaTree.R");#
+#
+df <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(df) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- df[,ncol(df)]#
+X <- df[,1:(ncol(df)-1)]#
+#
+atfit <- grow.atree(X, y, 1, 3)#
+output.alphatree(atfit);
+atfit <- grow.atree(X, y, 2, 3)#
+output.alphatree(atfit);
+source("alphaTree.R");#
+#
+df <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(df) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- df[,ncol(df)]#
+X <- df[,1:(ncol(df)-1)]#
+#
+atfit <- grow.atree(X, y, 1, 3)#
+output.alphatree(atfit);
+source("alphaTree.R");#
+#
+df <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(df) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- df[,ncol(df)]#
+X <- df[,1:(ncol(df)-1)]#
+#
+atfit <- atree(X, y, 1, 3)#
+output.json(atfit);#
+#
+atfit <- atree(X, y, 2, 3)#
+output.json(atfit);
+library(ROCR);#
+source("alphaTree.R");#
+n <- nrow(pima);#
+m <- ncol(pima);#
+pima.shuffle <- pima[sample(1:n,n),];#
+pima.train <- pima.shuffle[1:(n/2),];#
+pima.test <- pima.shuffle[(n/2+1):n,];#
+y.train <- pima.train[,m]#
+X.train <- pima.train[,1:(m-1)]#
+y.test <- pima.test[,m]#
+X.test <- pima.test[,1:(m-1)]#
+#
+# a single C4.5#
+c45 <- atree(X.train, y.train, 1, 4)#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"auc")
+library(ROCR);#
+source("alphaTree.R");#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+n <- nrow(pima);#
+m <- ncol(pima);#
+pima.shuffle <- pima[sample(1:n,n),];#
+pima.train <- pima.shuffle[1:(n/2),];#
+pima.test <- pima.shuffle[(n/2+1):n,];#
+y.train <- pima.train[,m]#
+X.train <- pima.train[,1:(m-1)]#
+y.test <- pima.test[,m]#
+X.test <- pima.test[,1:(m-1)]#
+#
+# a single C4.5#
+c45 <- atree(X.train, y.train, 1, 4)#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"auc")
+perf
+attr(perf,"y.values")
+eat <- atree(X.train, y.train, 1, 4);#
+eat <- rbind(eat, atree(X.train, y.train, 2, 4));#
+eat <- rbind(eat, atree(X.train, y.train, 0, 4));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]
+eat
+eat <- atree(X.train, y.train, 1, 4);
+eat
+ensemble <- function(obj1, obj2){#
+	minor.class <- obj1$minor.class;#
+	Major.class <- obj1$Major.class;#
+	rules <- rbind(obj1$rules, obj2$rules);#
+	return(list((minor.class=minor.class, Major.class=Major.class, rules=rules));#
+}
+ensemble <- function(obj1, obj2){#
+	minor.class <- obj1$minor.class;#
+	Major.class <- obj1$Major.class;#
+	rules <- rbind(obj1$rules, obj2$rules);#
+	return(list(minor.class=minor.class, Major.class=Major.class, rules=rules));#
+}
+eat <- atree(X.train, y.train, 1, 4);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, 4));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, 4));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]
+c45 <- atree(X.train, y.train, 1, 3);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]#
+#
+# ensemble multiple alpha trees#
+eat <- atree(X.train, y.train, 1, 3);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, 3));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, 3));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]
+eat <- ensemble(eat, atree(X.train, y.train, 0.5, 3));#
+eat <- ensemble(eat, atree(X.train, y.train, 2.5, 3));#
+eat <- ensemble(eat, atree(X.train, y.train, 3, 3));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]
+eat
+Learn-by-examples#
+# Author: Yubin Park#
+# Contact: yubin.park@utexas.edu#
+# Last Modified: Apr 25th, 2013#
+###################################
+#
+# example 1: build alpha trees with different alphas#
+#
+library(ROCR);#
+source("alphaTree.R");#
+#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+#
+option <- list(max.depth=3);#
+atfit <- atree(X, y, 0, option)#
+output.json(atfit);#
+perf <- performance(prediction(predict(atfit, X)$minor.class, y),"tpr","fpr")#
+plot(perf)#
+#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+perf <- performance(prediction(predict(atfit, X)$minor.class, y),"tpr","fpr")#
+plot(perf)#
+# example 2: ensemble alpha trees to improve prediction#
+#
+library(ROCR);#
+source("alphaTree.R");#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+n <- nrow(pima);#
+m <- ncol(pima);#
+pima.shuffle <- pima[sample(1:n,n),];#
+pima.train <- pima.shuffle[1:(n/2),];#
+pima.test <- pima.shuffle[(n/2+1):n,];#
+y.train <- pima.train[,m];#
+X.train <- pima.train[,1:(m-1)];#
+y.test <- pima.test[,m];#
+X.test <- pima.test[,1:(m-1)];#
+option <- list(max.depth=3);#
+# a single C4.5#
+c45 <- atree(X.train, y.train, 1, option);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]#
+#
+# ensemble three alpha trees#
+eat <- atree(X.train, y.train, 1, option);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, 3));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, 3));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]#
+#
+# ensemble more alpha trees#
+eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 3, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]#
+# example 3: lift-boosting ensemble
+option
+option == NULL
+option != NULL
+option
+Learn-by-examples#
+# Author: Yubin Park#
+# Contact: yubin.park@utexas.edu#
+# Last Modified: Apr 25th, 2013#
+###################################
+#
+# example 1: build alpha trees with different alphas#
+#
+library(ROCR);#
+source("alphaTree.R");#
+#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+#
+option <- list(max.depth=3);#
+atfit <- atree(X, y, 0, option)#
+output.json(atfit);#
+perf <- performance(prediction(predict(atfit, X)$minor.class, y),"tpr","fpr")#
+plot(perf)#
+#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+perf <- performance(prediction(predict(atfit, X)$minor.class, y),"tpr","fpr")#
+plot(perf)#
+# example 2: ensemble alpha trees to improve prediction#
+#
+library(ROCR);#
+source("alphaTree.R");#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+n <- nrow(pima);#
+m <- ncol(pima);#
+pima.shuffle <- pima[sample(1:n,n),];#
+pima.train <- pima.shuffle[1:(n/2),];#
+pima.test <- pima.shuffle[(n/2+1):n,];#
+y.train <- pima.train[,m];#
+X.train <- pima.train[,1:(m-1)];#
+y.test <- pima.test[,m];#
+X.test <- pima.test[,1:(m-1)];#
+option <- list(max.depth=3);#
+# a single C4.5#
+c45 <- atree(X.train, y.train, 1, option);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]#
+#
+# ensemble three alpha trees#
+eat <- atree(X.train, y.train, 1, option);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, 3));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, 3));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]#
+#
+# ensemble more alpha trees#
+eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 3, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]#
+# example 3: lift-boosting ensemble
+eat
+option
+library(ROCR);#
+source("alphaTree.R");#
+#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+#
+option <- list(max.depth=3);#
+atfit <- atree(X, y, 0, option)#
+output.json(atfit);
+Learn-by-examples#
+# Author: Yubin Park#
+# Contact: yubin.park@utexas.edu#
+# Last Modified: Apr 25th, 2013#
+###################################
+#
+# example 1: build alpha trees with different alphas#
+#
+library(ROCR);#
+source("alphaTree.R");#
+#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+#
+option <- list(max.depth=3);#
+atfit <- atree(X, y, 0, option)#
+output.json(atfit);#
+perf <- performance(prediction(predict(atfit, X)$minor.class, y),"tpr","fpr")#
+plot(perf)#
+#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+perf <- performance(prediction(predict(atfit, X)$minor.class, y),"tpr","fpr")#
+plot(perf)#
+# example 2: ensemble alpha trees to improve prediction#
+#
+library(ROCR);#
+source("alphaTree.R");#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+n <- nrow(pima);#
+m <- ncol(pima);#
+pima.shuffle <- pima[sample(1:n,n),];#
+pima.train <- pima.shuffle[1:(n/2),];#
+pima.test <- pima.shuffle[(n/2+1):n,];#
+y.train <- pima.train[,m];#
+X.train <- pima.train[,1:(m-1)];#
+y.test <- pima.test[,m];#
+X.test <- pima.test[,1:(m-1)];#
+option <- list(max.depth=3);#
+# a single C4.5#
+c45 <- atree(X.train, y.train, 1, option);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]#
+#
+# ensemble three alpha trees#
+eat <- atree(X.train, y.train, 1, option);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, 3));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, 3));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]#
+#
+# ensemble more alpha trees#
+eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 3, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]#
+# example 3: lift-boosting ensemble
+library(ROCR);#
+source("alphaTree.R");#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+n <- nrow(pima);#
+m <- ncol(pima);#
+pima.shuffle <- pima[sample(1:n,n),];#
+pima.train <- pima.shuffle[1:(n/2),];#
+pima.test <- pima.shuffle[(n/2+1):n,];#
+y.train <- pima.train[,m];#
+X.train <- pima.train[,1:(m-1)];#
+y.test <- pima.test[,m];#
+X.test <- pima.test[,1:(m-1)];#
+option <- list(max.depth=3);#
+# a single C4.5#
+c45 <- atree(X.train, y.train, 1, option);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]#
+#
+# ensemble three alpha trees#
+eat <- atree(X.train, y.train, 1, option);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]#
+#
+# ensemble more alpha trees#
+eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 3, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]
+library(ROCR);#
+source("alphaTree.R");#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+n <- nrow(pima);#
+m <- ncol(pima);#
+set.seed(1234)#
+pima.shuffle <- pima[sample(1:n,n),];#
+pima.train <- pima.shuffle[1:(n/2),];#
+pima.test <- pima.shuffle[(n/2+1):n,];#
+y.train <- pima.train[,m];#
+X.train <- pima.train[,1:(m-1)];#
+y.test <- pima.test[,m];#
+X.test <- pima.test[,1:(m-1)];#
+option <- list(max.depth=5);#
+# a single C4.5#
+c45 <- atree(X.train, y.train, 1, option);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]#
+#
+# ensemble three alpha trees#
+eat <- atree(X.train, y.train, 1, option);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]#
+#
+# ensemble more alpha trees#
+eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 3, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]
+library(ROCR);#
+source("alphaTree.R");#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+n <- nrow(pima);#
+m <- ncol(pima);#
+set.seed(1234)#
+pima.shuffle <- pima[sample(1:n,n),];#
+pima.train <- pima.shuffle[1:(n/2),];#
+pima.test <- pima.shuffle[(n/2+1):n,];#
+y.train <- pima.train[,m];#
+X.train <- pima.train[,1:(m-1)];#
+y.test <- pima.test[,m];#
+X.test <- pima.test[,1:(m-1)];#
+option <- list(max.depth=3);#
+# a single C4.5#
+c45 <- atree(X.train, y.train, 1, option);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]#
+#
+# ensemble three alpha trees#
+eat <- atree(X.train, y.train, 1, option);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]#
+#
+# ensemble more alpha trees#
+eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 3, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+attr(perf,"y.values")[[1]]
+library(ROCR);#
+source("alphaTree.R");#
+#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+#
+option <- list(max.depth=3);#
+atfit <- atree(X, y, 0, option)#
+output.json(atfit);
+option <- list(max.depth=3, lift=2);#
+atfit <- atree(X, y, 0, option)#
+output.json(atfit);
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 0, option)#
+output.json(atfit);
+option <- list(max.depth=5, lift=2);#
+atfit <- atree(X, y, 0, option)#
+output.json(atfit);
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);
+option <- list(max.depth=5, lift=2);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);
+library(ROCR);#
+source("alphaTree.R");#
+#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+#
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+ext.highlift(atfit);#
+#
+option <- list(max.depth=5, lift=2);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+ext.highlift(atfit);
+atfit$thr
+library(ROCR);#
+source("alphaTree.R");#
+#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+#
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+ext.highlift(atfit);#
+#
+option <- list(max.depth=5, lift=2);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+ext.highlift(atfit);
+library(ROCR);#
+source("alphaTree.R");#
+#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+#
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+ext.highlift(atfit, 2);#
+#
+option <- list(max.depth=5, lift=2);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+ext.highlift(atfit, 2);
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+hl.grp <- ext.highlift(atfit, 2);#
+sum(hl.grp[,"size"])#
+#
+option <- list(max.depth=5, lift=2);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+hl.grp <- ext.highlift(atfit, 2);#
+sum(hl.grp[,"size"])
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+lift <- 3;#
+#
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+hl.grp <- ext.highlift(atfit, lift);#
+sum(hl.grp[,"size"])#
+#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+hl.grp <- ext.highlift(atfit, lift);#
+sum(hl.grp[,"size"])
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+lift <- 1.5;#
+#
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+hl.grp <- ext.highlift(atfit, lift);#
+sum(hl.grp[,"size"])#
+#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+hl.grp <- ext.highlift(atfit, lift);#
+sum(hl.grp[,"size"])
+ensemble <- function(obj1, obj2){#
+	rules <- rbind(obj1$rules, obj2$rules);#
+	return(rules=rules);#
+}#
+#
+ext.highlift <- function(obj, lift){#
+	thr <- obj$baseline * lift;#
+	rules <- obj$rules;#
+	n <- 0;#
+	cov <- 0;#
+	new.obj <- NULL;#
+	for ( i in 1:nrow(rules)){#
+		if (rules[i,"minor.class"] > thr){#
+			new.obj <- rbind(new.obj, data.frame(rules[i,],hl.flag=1));			#
+		}#
+	}#
+	return(new.obj)#
+}
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+lift <- 1.5;#
+#
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+hl.grp <- ext.highlift(atfit, lift);#
+sum(hl.grp[,"size"])#
+#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+hl.grp <- ext.highlift(atfit, lift);#
+sum(hl.grp[,"size"])
+hl.grp
+library(ROCR);#
+source("alphaTree.R");#
+#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+lift <- 1.5;#
+#
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+hl.grp <- ext.highlift(atfit, lift);#
+sum(hl.grp[,"size"])#
+#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+hl.grp <- ext.highlift(atfit, lift);#
+sum(hl.grp[,"size"])
+hl.grp
+library(ROCR);#
+source("alphaTree.R");#
+#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+lift <- 1.5;#
+#
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+sum(predict.leat(aleat, X))#
+#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+#
+sum(predict.leat(aleat, X))#
+#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+leat <- ext.highlift(atfit, lift);#
+atfit <- atree(X, y, 0, option)#
+leat <- ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 2, option)#
+leat <- ensemble(leat, ext.highlift(atfit, lift));#
+sum(predict.leat(leat, X))
+library(ROCR);#
+source("alphaTree.R");#
+#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+lift <- 1.5;#
+#
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+sum(predict.leat(aleat, X))#
+#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+sum(predict.leat(aleat, X))#
+#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+leat <- ext.highlift(atfit, lift);#
+atfit <- atree(X, y, 0, option)#
+leat <- ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 2, option)#
+leat <- ensemble(leat, ext.highlift(atfit, lift));#
+sum(predict.leat(leat, X))#
+#
+atfit <- atree(X, y, 0.5, option)#
+leat <- ext.highlift(atfit, lift);#
+atfit <- atree(X, y, 1.5, option)#
+leat <- ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 2.5, option)#
+leat <- ensemble(leat, ext.highlift(atfit, lift));#
+sum(predict.leat(leat, X))
+Learn-by-examples#
+# Author: Yubin Park#
+# Contact: yubin.park@utexas.edu#
+# Last Modified: Apr 25th, 2013#
+###################################
+#
+# example 1: build alpha trees with different alphas#
+#
+library(ROCR);#
+source("alphaTree.R");#
+#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+#
+option <- list(max.depth=3);#
+atfit <- atree(X, y, 0, option)#
+output.json(atfit);#
+perf <- performance(prediction(predict(atfit, X)$minor.class, y),"tpr","fpr")#
+plot(perf)#
+#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+perf <- performance(prediction(predict(atfit, X)$minor.class, y),"tpr","fpr")#
+plot(perf)
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+#
+option <- list(max.depth=3);#
+atfit <- atree(X, y, 0, option)#
+output.json(atfit);#
+perf <- performance(prediction(predict(atfit, X)$minor.class, y),"tpr","fpr")#
+plot(perf)#
+#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+perf <- performance(prediction(predict(atfit, X)$minor.class, y),"tpr","fpr")#
+plot(perf)
+example 1: build alpha trees with different alphas#
+#
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+#
+option <- list(max.depth=3);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);
+atfit <- atree(X, y, 2, option)#
+output.json(atfit);
+atfit <- atree(X, y, 4, option)#
+output.json(atfit);
+option <- list(max.depth=2);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);
+atfit <- atree(X, y, 4, option)#
+output.json(atfit);
+option <- list(max.depth=2);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);
+example 2: ensemble alpha trees to improve prediction#
+#
+library(ROCR);#
+source("alphaTree.R");#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+n <- nrow(pima);#
+m <- ncol(pima);#
+set.seed(1234)#
+pima.shuffle <- pima[sample(1:n,n),];#
+pima.train <- pima.shuffle[1:(n/2),];#
+pima.test <- pima.shuffle[(n/2+1):n,];#
+y.train <- pima.train[,m];#
+X.train <- pima.train[,1:(m-1)];#
+y.test <- pima.test[,m];#
+X.test <- pima.test[,1:(m-1)];#
+option <- list(max.depth=3);#
+# a single C4.5#
+c45 <- atree(X.train, y.train, 1, option);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"tpr","fpr");
+perf
+c45 <- atree(X.train, y.train, 1, option);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="single C4.5");#
+#
+# ensemble three alpha trees#
+eat <- atree(X.train, y.train, 1, option);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot,, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="3 Alpha-Trees"));#
+#
+# ensemble more alpha trees#
+eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 1.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot,, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="5 Alpha-Trees"));#
+#
+library(ggplot2)#
+ggplot(plot, aes(x=fpr, y=tpr, colour=model)) + #
+geom_path()
+a single C4.5#
+c45 <- atree(X.train, y.train, 1, option);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="single C4.5");#
+#
+# ensemble three alpha trees#
+eat <- atree(X.train, y.train, 1, option);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="3 Alpha-Trees"));#
+#
+# ensemble more alpha trees#
+eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 1.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="5 Alpha-Trees"));#
+#
+library(ggplot2)#
+ggplot(plot, aes(x=fpr, y=tpr, colour=model)) + #
+geom_path()
+n <- nrow(pima);#
+m <- ncol(pima);#
+set.seed(1234)#
+pima.shuffle <- pima[sample(1:n,n),];#
+pima.train <- pima.shuffle[1:(n/2),];#
+pima.test <- pima.shuffle[(n/2+1):n,];#
+y.train <- pima.train[,m];#
+X.train <- pima.train[,1:(m-1)];#
+y.test <- pima.test[,m];#
+X.test <- pima.test[,1:(m-1)];#
+option <- list(max.depth=5);#
+# a single C4.5#
+c45 <- atree(X.train, y.train, 1, option);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="single C4.5");#
+#
+# ensemble three alpha trees#
+eat <- atree(X.train, y.train, 1, option);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="3 Alpha-Trees"));#
+#
+# ensemble more alpha trees#
+eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 1.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="5 Alpha-Trees"));#
+#
+library(ggplot2)#
+ggplot(plot, aes(x=fpr, y=tpr, colour=model)) + #
+geom_path()
+library(ROCR);#
+source("alphaTree.R");#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+n <- nrow(pima);#
+m <- ncol(pima);#
+set.seed(1234)#
+pima.shuffle <- pima[sample(1:n,n),];#
+pima.train <- pima.shuffle[1:(n/2),];#
+pima.test <- pima.shuffle[(n/2+1):n,];#
+y.train <- pima.train[,m];#
+X.train <- pima.train[,1:(m-1)];#
+y.test <- pima.test[,m];#
+X.test <- pima.test[,1:(m-1)];#
+option <- list(max.depth=3);#
+# a single C4.5#
+c45 <- atree(X.train, y.train, 1, option);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="single C4.5");#
+#
+# ensemble three alpha trees#
+eat <- atree(X.train, y.train, 1, option);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="3 Alpha-Trees"));#
+#
+# ensemble more alpha trees#
+eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 1.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="5 Alpha-Trees"));#
+#
+library(ggplot2)#
+ggplot(plot, aes(x=fpr, y=tpr, colour=model)) + #
+geom_path()
+n <- nrow(pima);#
+m <- ncol(pima);#
+set.seed(1234)#
+pima.shuffle <- pima[sample(1:n,n),];#
+pima.train <- pima.shuffle[1:(n/2),];#
+pima.test <- pima.shuffle[(n/2+1):n,];#
+y.train <- pima.train[,m];#
+X.train <- pima.train[,1:(m-1)];#
+y.test <- pima.test[,m];#
+X.test <- pima.test[,1:(m-1)];#
+option <- list(max.depth=4);#
+# a single C4.5#
+c45 <- atree(X.train, y.train, 1, option);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="single C4.5");#
+#
+# ensemble three alpha trees#
+eat <- atree(X.train, y.train, 1, option);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="3 Alpha-Trees"));#
+#
+# ensemble more alpha trees#
+eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 1.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="5 Alpha-Trees"));#
+#
+library(ggplot2)#
+ggplot(plot, aes(x=fpr, y=tpr, colour=model)) + #
+geom_path()
+library(ROCR);#
+source("alphaTree.R");#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+n <- nrow(pima);#
+m <- ncol(pima);#
+set.seed(1234)#
+pima.shuffle <- pima[sample(1:n,n),];#
+pima.train <- pima.shuffle[1:(n/5*4),];#
+pima.test <- pima.shuffle[(n/5*4+1):n,];#
+y.train <- pima.train[,m];#
+X.train <- pima.train[,1:(m-1)];#
+y.test <- pima.test[,m];#
+X.test <- pima.test[,1:(m-1)];#
+option <- list(max.depth=4);#
+# a single C4.5#
+c45 <- atree(X.train, y.train, 1, option);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="single C4.5");#
+#
+# ensemble three alpha trees#
+eat <- atree(X.train, y.train, 1, option);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="3 Alpha-Trees"));#
+#
+# ensemble more alpha trees#
+eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 1.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="5 Alpha-Trees"));#
+#
+library(ggplot2)#
+ggplot(plot, aes(x=fpr, y=tpr, colour=model)) + #
+geom_path()
+example 2: ensemble alpha trees to improve prediction#
+#
+library(ROCR);#
+source("alphaTree.R");#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+n <- nrow(pima);#
+m <- ncol(pima);#
+set.seed(1234)#
+pima.shuffle <- pima[sample(1:n,n),];#
+pima.train <- pima.shuffle[1:(n/5*4),];#
+pima.test <- pima.shuffle[(n/5*4+1):n,];#
+y.train <- pima.train[,m];#
+X.train <- pima.train[,1:(m-1)];#
+y.test <- pima.test[,m];#
+X.test <- pima.test[,1:(m-1)];#
+option <- list(max.depth=4);#
+# a single C4.5#
+c45 <- atree(X.train, y.train, 1, option);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="single C4.5");#
+#
+# ensemble three alpha trees#
+eat <- atree(X.train, y.train, 1, option);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="3 Alpha-Trees"));#
+#
+# ensemble more alpha trees#
+eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 1.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="5 Alpha-Trees"));#
+#
+library(ggplot2)#
+ggplot(plot, aes(x=fpr, y=tpr, colour=model)) + #
+geom_path()
+example 2: ensemble alpha trees to improve prediction#
+#
+library(ROCR);#
+source("atree/alphaTree.R");#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+n <- nrow(pima);#
+m <- ncol(pima);#
+set.seed(1234)#
+pima.shuffle <- pima[sample(1:n,n),];#
+pima.train <- pima.shuffle[1:(n/5*4),];#
+pima.test <- pima.shuffle[(n/5*4+1):n,];#
+y.train <- pima.train[,m];#
+X.train <- pima.train[,1:(m-1)];#
+y.test <- pima.test[,m];#
+X.test <- pima.test[,1:(m-1)];#
+option <- list(max.depth=4);#
+# a single C4.5#
+c45 <- atree(X.train, y.train, 1, option);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="single C4.5");#
+#
+# ensemble three alpha trees#
+eat <- atree(X.train, y.train, 1, option);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="3 Alpha-Trees"));#
+#
+# ensemble more alpha trees#
+eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 1.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="5 Alpha-Trees"));#
+#
+library(ggplot2)#
+ggplot(plot, aes(x=fpr, y=tpr, colour=model)) + #
+geom_path()
+example 2: ensemble alpha trees to improve prediction#
+#
+library(ROCR);#
+source("atree/alphaTree.R");#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+n <- nrow(pima);#
+m <- ncol(pima);#
+set.seed(1234)#
+pima.shuffle <- pima[sample(1:n,n),];#
+pima.train <- pima.shuffle[1:(n/5*4),];#
+pima.test <- pima.shuffle[(n/5*4+1):n,];#
+y.train <- pima.train[,m];#
+X.train <- pima.train[,1:(m-1)];#
+y.test <- pima.test[,m];#
+X.test <- pima.test[,1:(m-1)];#
+option <- list(max.depth=5);#
+# a single C4.5#
+c45 <- atree(X.train, y.train, 1, option);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="single C4.5");#
+#
+# ensemble three alpha trees#
+eat <- atree(X.train, y.train, 1, option);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="3 Alpha-Trees"));#
+#
+# ensemble more alpha trees#
+eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 1.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="5 Alpha-Trees"));#
+#
+library(ggplot2)#
+ggplot(plot, aes(x=fpr, y=tpr, colour=model)) + #
+geom_path()
+ggplot(plot, aes(x=fpr, y=tpr, colour=model, shape=model)) + #
+geom_path() +#
+geom_point()
+example 2: ensemble alpha trees to improve prediction#
+#
+library(ROCR);#
+source("atree/alphaTree.R");#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+n <- nrow(pima);#
+m <- ncol(pima);#
+set.seed(1234)#
+pima.shuffle <- pima[sample(1:n,n),];#
+pima.train <- pima.shuffle[1:(n/5*4),];#
+pima.test <- pima.shuffle[(n/5*4+1):n,];#
+y.train <- pima.train[,m];#
+X.train <- pima.train[,1:(m-1)];#
+y.test <- pima.test[,m];#
+X.test <- pima.test[,1:(m-1)];#
+option <- list(max.depth=5);#
+# a single C4.5#
+c45 <- atree(X.train, y.train, 1, option);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="single C4.5");#
+#
+# ensemble three alpha trees#
+eat <- atree(X.train, y.train, 1, option);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="3 Alpha-Trees"));#
+#
+# ensemble more alpha trees#
+eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 1.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 3.5, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="7 Alpha-Trees"));#
+#
+library(ggplot2)#
+ggplot(plot, aes(x=fpr, y=tpr, colour=model, shape=model)) + #
+geom_path() +#
+geom_point()
+example 2: ensemble alpha trees to improve prediction#
+#
+library(ROCR);#
+source("atree/alphaTree.R");#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+n <- nrow(pima);#
+m <- ncol(pima);#
+set.seed(1234)#
+pima.shuffle <- pima[sample(1:n,n),];#
+pima.train <- pima.shuffle[1:(n/5*4),];#
+pima.test <- pima.shuffle[(n/5*4+1):n,];#
+y.train <- pima.train[,m];#
+X.train <- pima.train[,1:(m-1)];#
+y.test <- pima.test[,m];#
+X.test <- pima.test[,1:(m-1)];#
+option <- list(max.depth=2);#
+# a single C4.5#
+c45 <- atree(X.train, y.train, 1, option);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="single C4.5");#
+#
+# ensemble three alpha trees#
+eat <- atree(X.train, y.train, 1, option);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="3 Alpha-Trees"));#
+#
+# ensemble more alpha trees#
+eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 1.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 3.5, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="7 Alpha-Trees"));#
+#
+library(ggplot2)#
+ggplot(plot, aes(x=fpr, y=tpr, colour=model, shape=model)) + #
+geom_path() +#
+geom_point()
+example 2: ensemble alpha trees to improve prediction#
+#
+library(ROCR);#
+source("atree/alphaTree.R");#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+n <- nrow(pima);#
+m <- ncol(pima);#
+set.seed(1234)#
+pima.shuffle <- pima[sample(1:n,n),];#
+pima.train <- pima.shuffle[1:(n/5*4),];#
+pima.test <- pima.shuffle[(n/5*4+1):n,];#
+y.train <- pima.train[,m];#
+X.train <- pima.train[,1:(m-1)];#
+y.test <- pima.test[,m];#
+X.test <- pima.test[,1:(m-1)];#
+option <- list(max.depth=3);#
+# a single C4.5#
+c45 <- atree(X.train, y.train, 1, option);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="single C4.5");#
+#
+# ensemble three alpha trees#
+eat <- atree(X.train, y.train, 1, option);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="3 Alpha-Trees"));#
+#
+# ensemble more alpha trees#
+eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 1.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 3.5, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="7 Alpha-Trees"));#
+#
+library(ggplot2)#
+ggplot(plot, aes(x=fpr, y=tpr, colour=model, shape=model)) + #
+geom_path() +#
+geom_point()
+example 2: ensemble alpha trees to improve prediction#
+#
+library(ROCR);#
+source("atree/alphaTree.R");#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+n <- nrow(pima);#
+m <- ncol(pima);#
+set.seed(1234)#
+pima.shuffle <- pima[sample(1:n,n),];#
+pima.train <- pima.shuffle[1:(n/5*4),];#
+pima.test <- pima.shuffle[(n/5*4+1):n,];#
+y.train <- pima.train[,m];#
+X.train <- pima.train[,1:(m-1)];#
+y.test <- pima.test[,m];#
+X.test <- pima.test[,1:(m-1)];#
+option <- list(max.depth=10);#
+# a single C4.5#
+c45 <- atree(X.train, y.train, 1, option);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="single C4.5");#
+#
+# ensemble three alpha trees#
+eat <- atree(X.train, y.train, 1, option);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="3 Alpha-Trees"));#
+#
+# ensemble more alpha trees#
+eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 1.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 3.5, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="7 Alpha-Trees"));#
+#
+library(ggplot2)#
+ggplot(plot, aes(x=fpr, y=tpr, colour=model, shape=model)) + #
+geom_path() +#
+geom_point()
+ggplot(plot, aes(x=fpr, y=tpr, colour=model)) + #
+geom_path()
+library(ROCR);#
+source("atree/alphaTree.R");#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+n <- nrow(pima);#
+m <- ncol(pima);#
+set.seed(1234)#
+pima.shuffle <- pima[sample(1:n,n),];#
+pima.train <- pima.shuffle[1:(n/5*4),];#
+pima.test <- pima.shuffle[(n/5*4+1):n,];#
+y.train <- pima.train[,m];#
+X.train <- pima.train[,1:(m-1)];#
+y.test <- pima.test[,m];#
+X.test <- pima.test[,1:(m-1)];#
+option <- list(max.depth=10);#
+# a single C4.5#
+c45 <- atree(X.train, y.train, 1, option);#
+perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="single C4.5");#
+#
+# ensemble three alpha trees#
+eat <- atree(X.train, y.train, 1, option);#
+eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="3 Alpha-Trees"));#
+#
+# ensemble more alpha trees#
+eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 1.5, option));#
+eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+plot <- rbind(plot, data.frame(fpr=attr(perf,"x.values")[[1]], #
+					tpr=attr(perf,"y.values")[[1]], #
+					model="6 Alpha-Trees"));#
+#
+library(ggplot2)#
+ggplot(plot, aes(x=fpr, y=tpr, colour=model)) + #
+geom_path()
+ggplot(plot, aes(x=fpr, y=tpr, colour=model)) + #
+geom_path() +#
+theme(legend.position=c(0.7,0.2))
+ggplot(plot, aes(x=fpr, y=tpr, colour=model)) + #
+geom_path() +#
+theme_bw() + #
+theme(legend.position=c(0.7,0.3))
+library(ggplot2)#
+ggplot(plot, aes(x=fpr, y=tpr, colour=model, linetype=model)) + #
+geom_path() +#
+theme_bw() + #
+theme(legend.position=c(0.7,0.3))
+ggsave("pdfs/beat_rocs.pdf",width=4, height=3);
+ggplot(plot, aes(x=fpr, y=tpr, colour=model, linetype=model)) + #
+geom_path(size=1) +#
+theme_bw() + #
+theme(legend.position=c(0.7,0.3))#
+ggsave("pdfs/beat_rocs.pdf",width=4, height=3);
+set.seed(1234)#
+for( i in 1:30 ){#
+	pima.shuffle <- pima[sample(1:n,n),];#
+	pima.train <- pima.shuffle[1:(n/5*4),];#
+	pima.test <- pima.shuffle[(n/5*4+1):n,];#
+	y.train <- pima.train[,m];#
+	X.train <- pima.train[,1:(m-1)];#
+	y.test <- pima.test[,m];#
+	X.test <- pima.test[,1:(m-1)];#
+	option <- list(max.depth=10);#
+	# a single C4.5#
+	c45 <- atree(X.train, y.train, 1, option);#
+	perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"auc");#
+	plot <- data.frame(auc=attr(perf,"y.values")[[1]], #
+					model="single C4.5");#
+#
+	# ensemble three alpha trees#
+	eat <- atree(X.train, y.train, 1, option);#
+	eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+	eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+	perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+	plot <- rbind(plot, data.frame(auc=attr(perf,"y.values")[[1]], #
+					model="3 Alpha-Trees"));#
+#
+	# ensemble more alpha trees#
+	eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+	eat <- ensemble(eat, atree(X.train, y.train, 1.5, option));#
+	eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+	perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+	plot <- rbind(plot, data.frame(auc=attr(perf,"y.values")[[1]], #
+					model="3 Alpha-Trees"));=#
+}#
+#
+library(ggplot2)#
+ggplot(plot, aes(x=model, y=auc, fill=model)) + #
+geom_boxplot() +#
+theme_bw()
+bootstrap estimation#
+set.seed(1234)#
+for( i in 1:30 ){#
+	pima.shuffle <- pima[sample(1:n,n),];#
+	pima.train <- pima.shuffle[1:(n/5*4),];#
+	pima.test <- pima.shuffle[(n/5*4+1):n,];#
+	y.train <- pima.train[,m];#
+	X.train <- pima.train[,1:(m-1)];#
+	y.test <- pima.test[,m];#
+	X.test <- pima.test[,1:(m-1)];#
+	option <- list(max.depth=10);#
+	# a single C4.5#
+	c45 <- atree(X.train, y.train, 1, option);#
+	perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"auc");#
+	plot <- data.frame(auc=attr(perf,"y.values")[[1]], #
+					model="single C4.5");#
+#
+	# ensemble three alpha trees#
+	eat <- atree(X.train, y.train, 1, option);#
+	eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+	eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+	perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+	plot <- rbind(plot, data.frame(auc=attr(perf,"y.values")[[1]], #
+					model="3 Alpha-Trees"));#
+#
+	# ensemble more alpha trees#
+	eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+	eat <- ensemble(eat, atree(X.train, y.train, 1.5, option));#
+	eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+	perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+	plot <- rbind(plot, data.frame(auc=attr(perf,"y.values")[[1]], #
+					model="3 Alpha-Trees"));#
+}#
+#
+library(ggplot2)#
+ggplot(plot, aes(x=model, y=auc, fill=model)) + #
+geom_boxplot() +#
+theme_bw()
+set.seed(1234);#
+plot <- NULL;#
+for( i in 1:3 ){#
+	pima.shuffle <- pima[sample(1:n,n),];#
+	pima.train <- pima.shuffle[1:(n/5*4),];#
+	pima.test <- pima.shuffle[(n/5*4+1):n,];#
+	y.train <- pima.train[,m];#
+	X.train <- pima.train[,1:(m-1)];#
+	y.test <- pima.test[,m];#
+	X.test <- pima.test[,1:(m-1)];#
+	option <- list(max.depth=10);#
+	# a single C4.5#
+	c45 <- atree(X.train, y.train, 1, option);#
+	perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"auc");#
+	plot <- rbind(plot, data.frame(auc=attr(perf,"y.values")[[1]], #
+					model="single C4.5"));#
+#
+	# ensemble three alpha trees#
+	eat <- atree(X.train, y.train, 1, option);#
+	eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+	eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+	perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+	plot <- rbind(plot, data.frame(auc=attr(perf,"y.values")[[1]], #
+					model="3 Alpha-Trees"));#
+#
+	# ensemble more alpha trees#
+	eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+	eat <- ensemble(eat, atree(X.train, y.train, 1.5, option));#
+	eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+	perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"tpr","fpr");#
+	plot <- rbind(plot, data.frame(auc=attr(perf,"y.values")[[1]], #
+					model="6 Alpha-Trees"));#
+}#
+#
+library(ggplot2)#
+ggplot(plot, aes(x=model, y=auc, fill=model)) + #
+geom_boxplot() +#
+theme_bw()
+plot
+set.seed(1234);#
+plot <- NULL;#
+for( i in 1:3 ){#
+	pima.shuffle <- pima[sample(1:n,n),];#
+	pima.train <- pima.shuffle[1:(n/5*4),];#
+	pima.test <- pima.shuffle[(n/5*4+1):n,];#
+	y.train <- pima.train[,m];#
+	X.train <- pima.train[,1:(m-1)];#
+	y.test <- pima.test[,m];#
+	X.test <- pima.test[,1:(m-1)];#
+	option <- list(max.depth=10);#
+	# a single C4.5#
+	c45 <- atree(X.train, y.train, 1, option);#
+	perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"auc");#
+	plot <- rbind(plot, data.frame(auc=attr(perf,"y.values")[[1]], #
+					model="single C4.5"));#
+#
+	# ensemble three alpha trees#
+	eat <- atree(X.train, y.train, 1, option);#
+	eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+	eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+	perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+	plot <- rbind(plot, data.frame(auc=attr(perf,"y.values")[[1]], #
+					model="3 Alpha-Trees"));#
+#
+	# ensemble more alpha trees#
+	eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+	eat <- ensemble(eat, atree(X.train, y.train, 1.5, option));#
+	eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+	perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+	plot <- rbind(plot, data.frame(auc=attr(perf,"y.values")[[1]], #
+					model="6 Alpha-Trees"));#
+}#
+#
+library(ggplot2)#
+ggplot(plot, aes(x=model, y=auc, fill=model)) + #
+geom_boxplot() +#
+theme_bw()
+set.seed(1234);#
+plot <- NULL;#
+for( i in 1:30 ){#
+	pima.shuffle <- pima[sample(1:n,n),];#
+	pima.train <- pima.shuffle[1:(n/5*4),];#
+	pima.test <- pima.shuffle[(n/5*4+1):n,];#
+	y.train <- pima.train[,m];#
+	X.train <- pima.train[,1:(m-1)];#
+	y.test <- pima.test[,m];#
+	X.test <- pima.test[,1:(m-1)];#
+	option <- list(max.depth=10);#
+	# a single C4.5#
+	c45 <- atree(X.train, y.train, 1, option);#
+	perf <- performance(prediction(predict(c45, X.test)$minor.class, y.test),"auc");#
+	plot <- rbind(plot, data.frame(auc=attr(perf,"y.values")[[1]], #
+					model="single C4.5"));#
+#
+	# ensemble three alpha trees#
+	eat <- atree(X.train, y.train, 1, option);#
+	eat <- ensemble(eat, atree(X.train, y.train, 2, option));#
+	eat <- ensemble(eat, atree(X.train, y.train, 0, option));#
+	perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+	plot <- rbind(plot, data.frame(auc=attr(perf,"y.values")[[1]], #
+					model="3 Alpha-Trees"));#
+#
+	# ensemble more alpha trees#
+	eat <- ensemble(eat, atree(X.train, y.train, 0.5, option));#
+	eat <- ensemble(eat, atree(X.train, y.train, 1.5, option));#
+	eat <- ensemble(eat, atree(X.train, y.train, 2.5, option));#
+	perf <- performance(prediction(predict(eat, X.test)$minor.class, y.test),"auc");#
+	plot <- rbind(plot, data.frame(auc=attr(perf,"y.values")[[1]], #
+					model="6 Alpha-Trees"));#
+}#
+#
+library(ggplot2)#
+ggplot(plot, aes(x=model, y=auc, fill=model)) + #
+geom_boxplot() +#
+theme_bw() + #
+theme(legend.position=c(0.7,0.3))#
+ggsave("pdfs/beat_aucs.pdf",width=4, height=3);
+ggplot(plot, aes(x=model, y=auc, fill=model)) + #
+geom_boxplot() +#
+theme_bw() + #
+theme(legend.position="none")#
+ggsave("pdfs/beat_aucs.pdf",width=4, height=3);
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]
+option <- list(max.depth=1);#
+atfit <- atree(X, y, 1, option)
+atfit
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 1, option);
+X[,c("plasma.glucose"),drop=F]
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 1, option);
+source("atree/alphaTree.R");#
+option <- list(max.depth=1);#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 1, option);
+atfit
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 1, option);#
+atfit#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 0, option);#
+atfit#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 2, option);#
+atfit
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 3, option);#
+atfit
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 4, option);#
+atfit
+option <- list(max.depth=2);#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 1, option);#
+atfit#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 0, option);#
+atfit#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 2, option);#
+atfit
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 1, option);#
+atfit#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 0, option);#
+atfit#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 3, option);#
+atfit
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 1, option);#
+atfit#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 0, option);#
+atfit#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 4, option);#
+atfit
+option <- list(max.depth=1);#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 0, option);#
+atfit#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 1, option);#
+atfit#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 4, option);#
+atfit#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 16, option);#
+atfit
+option <- list(max.depth=1);#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 0, option);#
+atfit#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 1, option);#
+atfit#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 4, option);#
+atfit#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 32, option);#
+atfit
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 0, option);#
+y.pred <- predict(atfit, X[,c("plasma.glucose"),drop=F]);#
+y.pred <- y.pred > min(y.pred)
+y.pred <- predict(atfit, X[,c("plasma.glucose"),drop=F])$minor.class;#
+y.pred <- y.pred > min(y.pred)
+y.pred
+plot <- NULL;#
+option <- list(max.depth=1);#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 0, option);#
+y.pred <- predict(atfit, X[,c("plasma.glucose"),drop=F])$minor.class;#
+y.pred <- y.pred > min(y.pred)#
+plot <- rbind(plot, data.frame(plasma.glucose=X$plasma.glucose, pred=y.pred, true=y, alpha=0));#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 1, option);#
+y.pred <- predict(atfit, X[,c("plasma.glucose"),drop=F])$minor.class;#
+y.pred <- y.pred > min(y.pred)#
+plot <- rbind(plot, data.frame(plasma.glucose=X$plasma.glucose, pred=y.pred, true=y, alpha=1));#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 4, option);#
+y.pred <- predict(atfit, X[,c("plasma.glucose"),drop=F])$minor.class;#
+y.pred <- y.pred > min(y.pred)#
+plot <- rbind(plot, data.frame(plasma.glucose=X$plasma.glucose, pred=y.pred, true=y, alpha=4));#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 32, option);#
+y.pred <- predict(atfit, X[,c("plasma.glucose"),drop=F])$minor.class;#
+y.pred <- y.pred > min(y.pred)#
+plot <- rbind(plot, data.frame(plasma.glucose=X$plasma.glucose, pred=y.pred, true=y, alpha=5));#
+#
+library(ggplot2)#
+#
+ggplot(plot, aes(x=plasma.glucose, fill=factor(pred))) + #
+geom_histogram(binwidth=5) +#
+facet_grid(alpha~true)
+plot <- NULL;#
+option <- list(max.depth=1);#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 0, option);#
+y.pred <- predict(atfit, X[,c("plasma.glucose"),drop=F])$minor.class;#
+y.pred <- y.pred > min(y.pred)#
+plot <- rbind(plot, data.frame(plasma.glucose=X$plasma.glucose, pred=y.pred, true=y, alpha="alpha=0"));#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 1, option);#
+y.pred <- predict(atfit, X[,c("plasma.glucose"),drop=F])$minor.class;#
+y.pred <- y.pred > min(y.pred)#
+plot <- rbind(plot, data.frame(plasma.glucose=X$plasma.glucose, pred=y.pred, true=y, alpha="alpha=1"));#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 4, option);#
+y.pred <- predict(atfit, X[,c("plasma.glucose"),drop=F])$minor.class;#
+y.pred <- y.pred > min(y.pred)#
+plot <- rbind(plot, data.frame(plasma.glucose=X$plasma.glucose, pred=y.pred, true=y, alpha="alpha=4"));#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 32, option);#
+y.pred <- predict(atfit, X[,c("plasma.glucose"),drop=F])$minor.class;#
+y.pred <- y.pred > min(y.pred)#
+plot <- rbind(plot, data.frame(plasma.glucose=X$plasma.glucose, pred=y.pred, true=y, alpha="alpha=32"));#
+#
+library(ggplot2)#
+#
+ggplot(plot, aes(x=plasma.glucose, fill=factor(pred))) + #
+geom_histogram(binwidth=5) +#
+facet_grid(alpha~true)
+true <- "Non-diabetic";#
+true[y >  0] <- "Diabetic";#
+plot <- NULL;#
+option <- list(max.depth=1);#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 0, option);#
+y.pred <- predict(atfit, X[,c("plasma.glucose"),drop=F])$minor.class;#
+pred <- "Non-diabetic"#
+pred[which(y.pred > min(y.pred))] <- "Diabetic"#
+plot <- rbind(plot, data.frame(plasma.glucose=X$plasma.glucose, pred=pred, true=true, alpha="alpha=0"));#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 1, option);#
+y.pred <- predict(atfit, X[,c("plasma.glucose"),drop=F])$minor.class;#
+pred <- "Non-diabetic"#
+pred[which(y.pred > min(y.pred))] <- "Diabetic"#
+plot <- rbind(plot, data.frame(plasma.glucose=X$plasma.glucose, pred=pred, true=true, alpha="alpha=1"));#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 4, option);#
+y.pred <- predict(atfit, X[,c("plasma.glucose"),drop=F])$minor.class;#
+pred <- "Non-diabetic"#
+pred[which(y.pred > min(y.pred))] <- "Diabetic"#
+plot <- rbind(plot, data.frame(plasma.glucose=X$plasma.glucose, pred=pred, true=true, alpha="alpha=4"));#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 32, option);#
+y.pred <- predict(atfit, X[,c("plasma.glucose"),drop=F])$minor.class;#
+pred <- "Non-diabetic"#
+pred[which(y.pred > min(y.pred))] <- "Diabetic"#
+plot <- rbind(plot, data.frame(plasma.glucose=X$plasma.glucose, pred=pred, true=true, alpha="alpha=32"));#
+#
+library(ggplot2)#
+#
+ggplot(plot, aes(x=plasma.glucose, fill=pred)) + #
+geom_histogram(binwidth=5) +#
+facet_grid(alpha~true)
+true
+source("atree/alphaTree.R");#
+true <- rep("Non-diabetic",length(y));#
+true[y >  0] <- "Diabetic";#
+plot <- NULL;#
+option <- list(max.depth=1);#
+#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 0, option);#
+y.pred <- predict(atfit, X[,c("plasma.glucose"),drop=F])$minor.class;#
+pred <- rep("Non-diabetic", length(y));#
+pred[which(y.pred > min(y.pred))] <- "Diabetic"#
+plot <- rbind(plot, data.frame(plasma.glucose=X$plasma.glucose, pred=pred, true=true, alpha="alpha=0"));#
+#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 1, option);#
+y.pred <- predict(atfit, X[,c("plasma.glucose"),drop=F])$minor.class;#
+pred <- rep("Non-diabetic", length(y));#
+pred[which(y.pred > min(y.pred))] <- "Diabetic"#
+plot <- rbind(plot, data.frame(plasma.glucose=X$plasma.glucose, pred=pred, true=true, alpha="alpha=1"));#
+#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 4, option);#
+y.pred <- predict(atfit, X[,c("plasma.glucose"),drop=F])$minor.class;#
+pred <- rep("Non-diabetic", length(y));#
+pred[which(y.pred > min(y.pred))] <- "Diabetic"#
+plot <- rbind(plot, data.frame(plasma.glucose=X$plasma.glucose, pred=pred, true=true, alpha="alpha=4"));#
+#
+atfit <- atree(X[,c("plasma.glucose"),drop=F], y, 32, option);#
+y.pred <- predict(atfit, X[,c("plasma.glucose"),drop=F])$minor.class;#
+pred <- rep("Non-diabetic", length(y));#
+pred[which(y.pred > min(y.pred))] <- "Diabetic"#
+plot <- rbind(plot, data.frame(plasma.glucose=X$plasma.glucose, pred=pred, true=true, alpha="alpha=32"));#
+#
+library(ggplot2)#
+#
+ggplot(plot, aes(x=plasma.glucose, fill=pred)) + #
+geom_histogram(binwidth=5) +#
+facet_grid(alpha~true)
+ggplot(plot, aes(x=plasma.glucose, fill=pred)) + #
+geom_histogram(binwidth=5) +#
+facet_grid(alpha~true) + #
+theme_bw()#
+#
+ggsvae("pdfs/atree_properties.pdf",width=4,height=3)
+ggsave("pdfs/atree_properties.pdf",width=4,height=3)
+ggsave("pdfs/atree_properties.pdf",width=8,height=6)
+library(ROCR);#
+source("alphaTree.R");#
+#
+pima <- read.csv('pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+lift <- 2;#
+#
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+sum(predict.leat(aleat, X))#
+#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+sum(predict.leat(aleat, X))#
+#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+leat <- ext.highlift(atfit, lift);#
+atfit <- atree(X, y, 0, option)#
+leat <- ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 2, option)#
+leat <- ensemble(leat, ext.highlift(atfit, lift));#
+sum(predict.leat(leat, X))#
+#
+atfit <- atree(X, y, 0.5, option)#
+leat <- ext.highlift(atfit, lift);#
+atfit <- atree(X, y, 1.5, option)#
+leat <- ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 2.5, option)#
+leat <- ensemble(leat, ext.highlift(atfit, lift));#
+sum(predict.leat(leat, X))
+example 3: lift-boosting ensemble#
+#
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+lift <- 2;#
+#
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+sum(predict.leat(aleat, X))#
+#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+sum(predict.leat(aleat, X))#
+#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+leat <- ext.highlift(atfit, lift);#
+atfit <- atree(X, y, 0, option)#
+leat <- ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 2, option)#
+leat <- ensemble(leat, ext.highlift(atfit, lift));#
+sum(predict.leat(leat, X))#
+#
+atfit <- atree(X, y, 0.5, option)#
+leat <- ext.highlift(atfit, lift);#
+atfit <- atree(X, y, 1.5, option)#
+leat <- ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 2.5, option)#
+leat <- ensemble(leat, ext.highlift(atfit, lift));#
+sum(predict.leat(leat, X))
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+lift <- 2;#
+#
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+sum(predict.leat(aleat, X))#
+#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+sum(predict.leat(aleat, X))#
+#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+leat <- ext.highlift(atfit, lift);#
+atfit <- atree(X, y, 0, option)#
+leat <- ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 2, option)#
+leat <- ensemble(leat, ext.highlift(atfit, lift));#
+sum(predict.leat(leat, X))#
+#
+atfit <- atree(X, y, 0.5, option)#
+leat <- ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 1.5, option)#
+leat <- ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 2.5, option)#
+leat <- ensemble(leat, ext.highlift(atfit, lift));#
+sum(predict.leat(leat, X))
+leat
+leat$rules
+unique(leat$rules)
+example 3: lift-boosting ensemble#
+#
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+lift <- 2;#
+#
+option <- list(max.depth=4);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+sum(predict.leat(aleat, X))#
+#
+option <- list(max.depth=4, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+sum(predict.leat(aleat, X))#
+#
+option <- list(max.depth=4, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+leat <- ext.highlift(atfit, lift);#
+atfit <- atree(X, y, 0, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 2, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+sum(predict.leat(leat, X))#
+#
+atfit <- atree(X, y, 4, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 16, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 32, option)#
+leat <- unque.ensemble(leat, ext.highlift(atfit, lift));#
+sum(predict.leat(leat, X))
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+lift <- 2;#
+#
+option <- list(max.depth=4);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+sum(predict.leat(aleat, X))#
+#
+option <- list(max.depth=4, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+sum(predict.leat(aleat, X))#
+#
+option <- list(max.depth=4, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+leat <- ext.highlift(atfit, lift);#
+atfit <- atree(X, y, 0, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 2, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+sum(predict.leat(leat, X))#
+#
+atfit <- atree(X, y, 4, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 16, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 32, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+sum(predict.leat(leat, X))
+leat
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+lift <- 3;#
+#
+option <- list(max.depth=4);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+sum(predict.leat(aleat, X))#
+#
+option <- list(max.depth=4, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+sum(predict.leat(aleat, X))#
+#
+option <- list(max.depth=4, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+leat <- ext.highlift(atfit, lift);#
+atfit <- atree(X, y, 0, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 2, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+sum(predict.leat(leat, X))#
+#
+atfit <- atree(X, y, 4, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 16, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 32, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+sum(predict.leat(leat, X))
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+lift <- 2.5;#
+#
+option <- list(max.depth=4);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+sum(predict.leat(aleat, X))#
+#
+option <- list(max.depth=4, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+sum(predict.leat(aleat, X))#
+#
+option <- list(max.depth=4, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+leat <- ext.highlift(atfit, lift);#
+atfit <- atree(X, y, 0, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 2, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+sum(predict.leat(leat, X))#
+#
+atfit <- atree(X, y, 4, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 16, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 32, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+sum(predict.leat(leat, X))
+leat
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+lift <- 2.5;#
+#
+option <- list(max.depth=4);#
+plot <- NULL;#
+#
+for(lift in seq(from=1, to=2.5, by=0.5)){#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(aleat, X))/nrow(X),#
+					model="C4.5"))#
+#
+option <- list(max.depth=4, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(aleat, X))/nrow(X),#
+					model="AT w Lift Stopping"))#
+option <- list(max.depth=4, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+leat <- ext.highlift(atfit, lift);#
+atfit <- atree(X, y, 0, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 2, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(aleat, X))/nrow(X),#
+					model="LEAT (3 AT)"))#
+atfit <- atree(X, y, 4, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 16, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 32, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(aleat, X))/nrow(X),#
+					model="LEAT (6 AT)"))#
+}#
+#
+library(ggplot2)#
+#
+ggplot(plot, aes(x=model, y=cov, colour=model)) + geom_path()
+plot
+plot <- NULL;#
+#
+for(lift in seq(from=1, to=2.5, by=0.5)){#
+#
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(aleat, X))/nrow(X),#
+					model="C4.5"))#
+#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(aleat, X))/nrow(X),#
+					model="AT w Lift Stopping"))#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+leat <- ext.highlift(atfit, lift);#
+atfit <- atree(X, y, 0, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 2, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(aleat, X))/nrow(X),#
+					model="LEAT (3 AT)"))#
+atfit <- atree(X, y, 4, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 16, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 32, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(aleat, X))/nrow(X),#
+					model="LEAT (6 AT)"))#
+}#
+#
+library(ggplot2)#
+#
+ggplot(plot, aes(x=model, y=cov, colour=model)) + geom_path()
+ggplot(plot, aes(x=cov, y=lift, colour=model)) + geom_path()
+plot
+plot <- NULL;#
+#
+for(lift in seq(from=1, to=2.5, by=0.5)){#
+#
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(aleat, X))/nrow(X),#
+					model="C4.5"))#
+#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(aleat, X))/nrow(X),#
+					model="AT w Lift Stopping"))#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+leat <- ext.highlift(atfit, lift);#
+atfit <- atree(X, y, 0, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 2, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(leat, X))/nrow(X),#
+					model="LEAT (3 AT)"))#
+atfit <- atree(X, y, 4, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 16, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 32, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(leat, X))/nrow(X),#
+					model="LEAT (6 AT)"))#
+}#
+#
+library(ggplot2)#
+#
+ggplot(plot, aes(x=cov, y=lift, colour=model)) + geom_path()
+plot <- NULL;#
+#
+for(lift in seq(from=1, to=2.5, by=0.5)){#
+#
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(aleat, X))/nrow(X),#
+					model="C4.5"))#
+#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(aleat, X))/nrow(X),#
+					model="AT w Lift Stopping"))#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+leat <- ext.highlift(atfit, lift);#
+atfit <- atree(X, y, 0, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 2, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(leat, X))/nrow(X),#
+					model="LEAT (3 AT)"))#
+atfit <- atree(X, y, 4, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 16, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 32, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(leat, X))/nrow(X),#
+					model="LEAT (6 AT)"))#
+}#
+plot <- rbind(plot, data.frame(lift=1,cov=1,model="C4.5"))#
+plot <- rbind(plot, data.frame(lift=1,cov=1,model="AT w Lift Stopping"))#
+plot <- rbind(plot, data.frame(lift=1,cov=1,model="LEAT (3 AT)"))#
+plot <- rbind(plot, data.frame(lift=1,cov=1,model="LEAT (6 AT)"))#
+#
+library(ggplot2)#
+#
+ggplot(plot, aes(x=cov, y=lift, colour=model)) + geom_path()
+ggplot(plot, aes(x=cov, y=lift, colour=model)) + geom_line()
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+lift <- 2.5;#
+plot <- NULL;#
+#
+for(lift in seq(from=1, to=2.5, by=0.2)){#
+#
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(aleat, X))/nrow(X),#
+					model="C4.5"))#
+#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(aleat, X))/nrow(X),#
+					model="AT w Lift Stopping"))#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+leat <- ext.highlift(atfit, lift);#
+atfit <- atree(X, y, 0, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 2, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(leat, X))/nrow(X),#
+					model="LEAT (3 AT)"))#
+atfit <- atree(X, y, 4, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 16, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 32, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(leat, X))/nrow(X),#
+					model="LEAT (6 AT)"))#
+}#
+plot <- rbind(plot, data.frame(lift=1,cov=1,model="C4.5"))#
+plot <- rbind(plot, data.frame(lift=1,cov=1,model="AT w Lift Stopping"))#
+plot <- rbind(plot, data.frame(lift=1,cov=1,model="LEAT (3 AT)"))#
+plot <- rbind(plot, data.frame(lift=1,cov=1,model="LEAT (6 AT)"))#
+#
+library(ggplot2)#
+#
+ggplot(plot, aes(x=cov, y=lift, colour=model)) + geom_line()
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+#
+plot <- NULL;#
+#
+for(lift in seq(from=1.2, to=2.4, by=0.2)){#
+#
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(aleat, X))/nrow(X),#
+					model="C4.5"))#
+#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(aleat, X))/nrow(X),#
+					model="AT w Lift Stopping"))#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+leat <- ext.highlift(atfit, lift);#
+atfit <- atree(X, y, 0, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 2, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(leat, X))/nrow(X),#
+					model="LEAT (3 AT)"))#
+atfit <- atree(X, y, 4, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 16, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 32, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(leat, X))/nrow(X),#
+					model="LEAT (6 AT)"))#
+}#
+plot <- rbind(plot, data.frame(lift=1,cov=1,model="C4.5"))#
+plot <- rbind(plot, data.frame(lift=1,cov=1,model="AT w Lift Stopping"))#
+plot <- rbind(plot, data.frame(lift=1,cov=1,model="LEAT (3 AT)"))#
+plot <- rbind(plot, data.frame(lift=1,cov=1,model="LEAT (6 AT)"))#
+#
+library(ggplot2)#
+#
+ggplot(plot, aes(x=cov, y=lift, colour=model)) + geom_line()
+ploy
+plot
+plot <- NULL;#
+plot <- rbind(plot, data.frame(lift=1,cov=1,model="C4.5"))#
+plot <- rbind(plot, data.frame(lift=1,cov=1,model="AT w Lift Stopping"))#
+plot <- rbind(plot, data.frame(lift=1,cov=1,model="LEAT (3 AT)"))#
+plot <- rbind(plot, data.frame(lift=1,cov=1,model="LEAT (6 AT)"))#
+#
+for(lift in seq(from=1.2, to=2.4, by=0.2)){#
+#
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(aleat, X))/nrow(X),#
+					model="C4.5"))#
+#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(aleat, X))/nrow(X),#
+					model="AT w Lift Stopping"))#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+leat <- ext.highlift(atfit, lift);#
+atfit <- atree(X, y, 0, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 2, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(leat, X))/nrow(X),#
+					model="LEAT (3 AT)"))#
+atfit <- atree(X, y, 4, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 16, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 32, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(leat, X))/nrow(X),#
+					model="LEAT (6 AT)"))#
+}#
+library(ggplot2)#
+#
+ggplot(plot, aes(x=cov, y=lift, colour=model)) + geom_path()
+ggplot(plot, aes(x=cov, y=lift, colour=model, linetype=model)) + #
+geom_path(size=2) + #
+theme_bw() +
+theme(legend.position=c(0.8,0.6))
+example 3: lift-boosting ensemble#
+#
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+#
+plot <- NULL;#
+plot <- rbind(plot, data.frame(lift=1,cov=1,model="C4.5"))#
+plot <- rbind(plot, data.frame(lift=1,cov=1,model="AT w Lift Stopping"))#
+plot <- rbind(plot, data.frame(lift=1,cov=1,model="LEAT (3 AT)"))#
+plot <- rbind(plot, data.frame(lift=1,cov=1,model="LEAT (6 AT)"))#
+#
+for(lift in seq(from=1.2, to=2.4, by=0.1)){#
+#
+option <- list(max.depth=5);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(aleat, X))/nrow(X),#
+					model="C4.5"))#
+#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+aleat <- ext.highlift(atfit, lift);#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(aleat, X))/nrow(X),#
+					model="AT w Lift Stopping"))#
+option <- list(max.depth=5, lift=lift);#
+atfit <- atree(X, y, 1, option)#
+leat <- ext.highlift(atfit, lift);#
+atfit <- atree(X, y, 0, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 2, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(leat, X))/nrow(X),#
+					model="LEAT (3 AT)"))#
+atfit <- atree(X, y, 4, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 16, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+atfit <- atree(X, y, 32, option)#
+leat <- unique.ensemble(leat, ext.highlift(atfit, lift));#
+plot <- rbind(plot, data.frame(lift=lift, #
+					cov=sum(predict.leat(leat, X))/nrow(X),#
+					model="LEAT (6 AT)"))#
+}#
+library(ggplot2)#
+#
+ggplot(plot, aes(x=cov, y=lift, colour=model, linetype=model)) + #
+geom_path(size=1) + #
+theme_bw() + #
+theme(legend.position=c(0.8,0.6))#
+#
+ggsave("pdfs/leat_liftc.pdf",width=4, height=3)
+ggsave("pdfs/leat_liftc.pdf",width=8, height=6)
