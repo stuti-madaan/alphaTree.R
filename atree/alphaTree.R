@@ -26,7 +26,7 @@ alpha.div <- function(c1, c2, alpha){
 	return(adiv);
 }
 
-alpha.gain <- function(x, y, alpha, y.lst){
+alpha.gain <- function(x, y, alpha, y.lst, min.n){
 	# Computes $\alpha$-Gain for feature "x" 
 	# Args:
 	#		x: feature
@@ -58,6 +58,9 @@ alpha.gain <- function(x, y, alpha, y.lst){
 		n.y <- length(y);
 		n.y.left <- length(y.left);
 		n.y.right <- length(y.right);
+		
+		if(n.y.left < min.n || n.y.right < min.n) next;
+		
 		n.pos <- sum(y==y.lst[1]);
 		n.pos.left <- sum(y.left==y.lst[1]);
 		n.pos.right <- sum(y.right==y.lst[1]);
@@ -83,7 +86,7 @@ alpha.gain <- function(x, y, alpha, y.lst){
 }
 
 
-split.variable <- function(X, y, alpha, y.lst, thr){
+split.variable <- function(X, y, alpha, y.lst, thr, min.n){
 	# Find a split variable by searching all the variables 
 	# Args:
 	#		X: feature matrix
@@ -116,7 +119,7 @@ split.variable <- function(X, y, alpha, y.lst, thr){
 	# Search all the variables, and choose the best.
 	for(i in 1:M){
 		if (length(unique(X[,i]))==1) next;
-		ag <- alpha.gain(X[,i], y, alpha, y.lst);
+		ag <- alpha.gain(X[,i], y, alpha, y.lst, min.n);
 		if(max.gain < ag$gain){
 			max.gain <- ag$gain;
 			max.feature <- i;
@@ -165,21 +168,32 @@ atree <- function(X, y, alpha, option=list()){
 
 	max.depth <- 5;
 	lift <- -1;	# default value; no lift criterion
+	min.n <- 10;	
+	y.lst <- sort(unique(y), decreasing=FALSE);
+	if(class.ratio(y, y.lst) > 0.5){
+		y.lst <- sort(unique(y), decreasing=TRUE);
+	}
+	minor.class <- class.ratio(y, y.lst);
+	Major.class <- 1 - minor.class;	
+	
 	if ( "max.depth" %in% names(option)){
 		max.depth <- option$max.depth;			
 	}
 	if ( "lift" %in% names(option)){
 		lift <- option$lift;	
 	}
+	if ( "min.n" %in% names(option)){
+		min.n <- option$min.n;
+	}
+	if ( "class" %in% names(option)){
+		y.lst <- option$class;
+		minor.class <- class.ratio(y, y.lst);
+		Major.class <- 1 - minor.class;	
+	}	
 
 	N <- length(y); # a total number of data samples
 	pid.lst <- rep(1,N); # a list of partition indeces
-	y.lst <- sort(unique(y),decreasing=FALSE);
-	if(class.ratio(y, y.lst) > 0.5){
-		y.lst <- sort(unique(y),decreasing=TRUE);
-	}
-	minor.class <- class.ratio(y, y.lst);
-	Major.class <- 1 - minor.class;	
+
 	rules <- data.frame(pid=1, rule="", minor.class=minor.class, Major.class=Major.class, size=N);
 	thr <- minor.class * lift;
 
@@ -200,7 +214,7 @@ atree <- function(X, y, alpha, option=list()){
 			X.sub <- X[sub.idx,,drop=F];
 			y.sub <- y[sub.idx];
 			
-			split.result <- split.variable(X.sub, y.sub, alpha, y.lst, thr);	
+			split.result <- split.variable(X.sub, y.sub, alpha, y.lst, thr, min.n);	
 			feature <- split.result$feature;
 			value <- split.result$value;
 			

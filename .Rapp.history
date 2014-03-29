@@ -1,0 +1,2427 @@
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+#
+option <- list(max.depth=3);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);#
+perf <- performance(prediction(predict(atfit, X)$minor.class, y),"tpr","fpr")
+option <- list(max.depth=4);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);
+example 1: build alpha trees with different alphas#
+#
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+pima <- read.csv('data/pima-indians-diabetes.data',header=F)#
+colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",#
+					"triceps.thickness","serum.insulin",#
+					"bmi","pedigree","age","class");#
+#
+y <- pima[,ncol(pima)]#
+X <- pima[,1:(ncol(pima)-1)]#
+#
+option <- list(max.depth=4);#
+atfit <- atree(X, y, 1, option)#
+output.json(atfit);
+library(ROCR);#
+source("atree/alphaTree.R");
+hypo <- read.csv("data/allhypo.data")
+hypo
+str(hypo)
+hypo$binary.class <- 1-(hypo$class=="negative.");
+hypo$binary.class
+hypo$class <- NULL;
+str(model.matrix(~.-1, hypo))
+str(model.matrix(~., hypo))
+str(model.matrix(~, hypo))
+str(model.matrix(binary.class~., hypo))
+summary(hypo)
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+#
+str(model.matrix(~., hypo))
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhypo.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+str(model.matrix(~., hypo))
+str(hypo)
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhypo.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);
+option <- list(max.depth=4, min.n=10);#
+atfit <- atree(X, y, 1, option)
+atfit
+atree(X, y, 1, option)#
+atree(X, y, 0, option)#
+atree(X, y, 2, option)
+atree(X, y, 4, option)
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/5*4)]
+1:(n/5*4)
+1:(n/5*4+1)
+class.ratio <- mean(y);
+class.ratio
+floor(class.ratio * length(train.idx))
+pos.train.idx <- which(y.train==1)
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhypo.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(1);#
+n <- length(y);#
+class.ratio <- mean(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/5*4)];#
+test.idx <- random.idx[(n/5*4+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+pos.train.idx <- which(y.train==1)#
+floor(class.ratio * length(train.idx))
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhypo.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(1);#
+n <- length(y);#
+class.ratio <- mean(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/5*4)];#
+test.idx <- random.idx[(n/5*4+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.os <- y.train[undersample.idx];#
+#
+option <- list(max.depth=3, min.n=10);#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+#
+performance(prediction(y.pred, y.test),"auc")
+class.ratio
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhypo.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(1);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/5*4)];#
+test.idx <- random.idx[(n/5*4+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.os <- y.train[undersample.idx];#
+#
+option <- list(max.depth=3, min.n=10);#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+#
+performance(prediction(y.pred, y.test),"auc")
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+option <- list(max.depth=3, min.n=10);#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+c45
+c45 <- atree(X.train, y.train, 0, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+c45 <- atree(X.train, y.train, 4, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+c45 <- atree(X.train, y.train, 0.5, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+c45 <- atree(X.train, y.train, 4, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhypo.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(1);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.os <- y.train[undersample.idx];#
+#
+option <- list(max.depth=3, min.n=10);#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+c45
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(1);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.os <- y.train[undersample.idx];#
+#
+option <- list(max.depth=3, min.n=10);#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+c45 <- atree(X.train, y.train, 0.5, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45 <- atree(X.train, y.train, 4, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+c45
+mean(y)
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(1);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/5*4)];#
+test.idx <- random.idx[(n/5*4+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.os <- y.train[undersample.idx];#
+#
+option <- list(max.depth=4, min.n=10);#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+c45 <- atree(X.train, y.train, 0.5, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45 <- atree(X.train, y.train, 4, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+c45 <- atree(X.train, y.train, 0, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45 <- atree(X.train, y.train, 2, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(1);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/5*4)];#
+test.idx <- random.idx[(n/5*4+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.os <- y.train[undersample.idx];#
+#
+option <- list(max.depth=4, min.n=10);#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.05 <- atree(X.train, y.train, 0.5, option);#
+y.pred <- predict(alpha.05, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.15 <- atree(X.train, y.train, 1.5, option);#
+y.pred <- predict(alpha.15, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+c45
+alpha.05
+alpha.15
+alpha.15 <- atree(X.train, y.train, 2, option);#
+y.pred <- predict(alpha.15, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+alpha.15
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(1);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.os <- y.train[undersample.idx];#
+#
+option <- list(max.depth=4, min.n=10);#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.05 <- atree(X.train, y.train, 0.5, option);#
+y.pred <- predict(alpha.05, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.15 <- atree(X.train, y.train, 1.5, option);#
+y.pred <- predict(alpha.15, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+c45
+alpha.05
+alpha.15
+alpha.15 <- atree(X.train, y.train, 2, option);#
+y.pred <- predict(alpha.15, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+alpha.05 <- atree(X.train, y.train, 0, option);#
+y.pred <- predict(alpha.05, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+alpha.05 <- atree(X.train, y.train, 0.5, option);#
+y.pred <- predict(alpha.05, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+alpha2
+alpha.2
+alpha.2 <- atree(X.train, y.train, 2, option);
+alpha.2
+c45
+option <- list(max.depth=3, min.n=10);#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+y.pred <- predict(c45.os, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+y.pred <- predict(c45.us, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+alpha.05 <- atree(X.train, y.train, 0.5, option);#
+y.pred <- predict(alpha.05, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+y.pred <- predict(alpha.2, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(1);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+#
+option <- list(max.depth=3, min.n=10);#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+y.pred <- predict(c45.os, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+y.pred <- predict(c45.us, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+alpha.05 <- atree(X.train, y.train, 0.5, option);#
+y.pred <- predict(alpha.05, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+y.pred <- predict(alpha.2, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+c45.os
+hypo <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(1);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+#
+option <- list(max.depth=3, min.n=10, class=c(0,1));#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+y.pred <- predict(c45.os, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+y.pred <- predict(c45.us, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+alpha.05 <- atree(X.train, y.train, 0.5, option);#
+y.pred <- predict(alpha.05, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+y.pred <- predict(alpha.2, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+c45.os
+c45
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(1);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+#
+option <- list(max.depth=3, min.n=10, class=c(0,1));#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+y.pred <- predict(c45.os, X.test)$minor.class;
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+c45
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(1);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+#
+option <- list(max.depth=3, min.n=10, class=c(1, 0));#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+y.pred <- predict(c45.os, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+y.pred <- predict(c45.us, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+alpha.05 <- atree(X.train, y.train, 0.5, option);#
+y.pred <- predict(alpha.05, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+y.pred <- predict(alpha.2, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(1);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+#
+option <- list(max.depth=5, min.n=10, class=c(1, 0));#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+y.pred <- predict(c45.os, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+y.pred <- predict(c45.us, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.0 <- atree(X.train, y.train, 0, option);#
+y.pred <- predict(alpha.0, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+y.pred <- predict(alpha.2, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(1);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+#
+option <- list(max.depth=10, min.n=10, class=c(1, 0));#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+y.pred <- predict(c45.os, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+y.pred <- predict(c45.us, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.0 <- atree(X.train, y.train, 0, option);#
+y.pred <- predict(alpha.0, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+y.pred <- predict(alpha.2, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(1);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+#
+option <- list(max.depth=10, min.n=3, class=c(1, 0));#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+y.pred <- predict(c45.os, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+y.pred <- predict(c45.us, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.0 <- atree(X.train, y.train, 0, option);#
+y.pred <- predict(alpha.0, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+y.pred <- predict(alpha.2, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(1);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+#
+option <- list(max.depth=7, min.n=3, class=c(1, 0));#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+y.pred <- predict(c45.os, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+y.pred <- predict(c45.us, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.0 <- atree(X.train, y.train, 0, option);#
+y.pred <- predict(alpha.0, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+y.pred <- predict(alpha.2, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(2);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+#
+option <- list(max.depth=7, min.n=3, class=c(1, 0));#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+y.pred <- predict(c45.os, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+y.pred <- predict(c45.us, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.0 <- atree(X.train, y.train, 0, option);#
+y.pred <- predict(alpha.0, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+y.pred <- predict(alpha.2, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+alpha.0
+alpha.1
+alpha.2
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(2);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+#
+option <- list(max.depth=7, min.n=10, class=c(1, 0));#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+y.pred <- predict(c45.os, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+y.pred <- predict(c45.us, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.0 <- atree(X.train, y.train, 0, option);#
+y.pred <- predict(alpha.0, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+y.pred <- predict(alpha.2, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+option <- list(max.depth=12, min.n=10, class=c(1, 0));#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+y.pred <- predict(c45.os, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+y.pred <- predict(c45.us, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.0 <- atree(X.train, y.train, 0, option);#
+y.pred <- predict(alpha.0, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+y.pred <- predict(alpha.2, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+option <- list(max.depth=14, min.n=10, class=c(1, 0));#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+y.pred <- predict(c45.os, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+y.pred <- predict(c45.us, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.0 <- atree(X.train, y.train, 0, option);#
+y.pred <- predict(alpha.0, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+y.pred <- predict(alpha.2, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(2);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+#
+option <- list(max.depth=14, min.n=10, class=c(1, 0));#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+y.pred <- predict(c45.os, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+y.pred <- predict(c45.us, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.00 <- atree(X.train, y.train, 0, option);#
+y.pred <- predict(alpha.00, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.05 <- atree(X.train, y.train, 0.5, option);#
+y.pred <- predict(alpha.05, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.15 <- atree(X.train, y.train, 1.5, option);#
+y.pred <- predict(alpha.15, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.20 <- atree(X.train, y.train, 2, option);#
+y.pred <- predict(alpha.20, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(2);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+X.train.b1 <- X.train[bootstrap1.idx, ];#
+y.train.b1 <- y.train[bootstrap1.idx];#
+X.train.b2 <- X.train[bootstrap2.idx, ];#
+y.train.b2 <- y.train[bootstrap2.idx];#
+X.train.b3 <- X.train[bootstrap3.idx, ];#
+y.train.b3 <- y.train[bootstrap3.idx];#
+#
+option <- list(max.depth=14, min.n=10, class=c(1, 0));#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+y.pred <- predict(c45, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+y.pred <- predict(c45.os, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+y.pred <- predict(c45.us, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.b1 <- atree(X.train.b1, y.train.b1, 1, option);#
+y.pred <- predict(c45.b1, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.b2 <- atree(X.train.b2, y.train.b2, 1, option);#
+y.pred <- predict(c45.b2, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+c45.b3 <- atree(X.train.b3, y.train.b3, 1, option);#
+y.pred <- predict(c45.b3, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.00 <- atree(X.train, y.train, 0, option);#
+y.pred <- predict(alpha.00, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.05 <- atree(X.train, y.train, 0.5, option);#
+y.pred <- predict(alpha.05, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.15 <- atree(X.train, y.train, 1.5, option);#
+y.pred <- predict(alpha.15, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]#
+#
+alpha.20 <- atree(X.train, y.train, 2, option);#
+y.pred <- predict(alpha.20, X.test)$minor.class;#
+performance(prediction(y.pred, y.test),"auc")@y.values[[1]]
+library(ROCR);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(2);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+X.train.b1 <- X.train[bootstrap1.idx, ];#
+y.train.b1 <- y.train[bootstrap1.idx];#
+X.train.b2 <- X.train[bootstrap2.idx, ];#
+y.train.b2 <- y.train[bootstrap2.idx];#
+X.train.b3 <- X.train[bootstrap3.idx, ];#
+y.train.b3 <- y.train[bootstrap3.idx];#
+#
+option <- list(max.depth=14, min.n=10, class=c(1, 0));#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+c45.b1 <- atree(X.train.b1, y.train.b1, 1, option);#
+c45.b2 <- atree(X.train.b2, y.train.b2, 1, option);#
+c45.b3 <- atree(X.train.b3, y.train.b3, 1, option);#
+alpha.1 <- atree(X.train, y.train, 0.5, option);#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+y.c45.pred <- predict(c45, X.test)$minor.class;#
+y.c45.os.pred <- predict(c45.os, X.test)$minor.class;#
+y.c45.us.pred <- predict(c45.us, X.test)$minor.class;#
+y.c45.b1.pred <- predict(c45.b1, X.test)$minor.class;#
+y.c45.b2.pred <- predict(c45.b2, X.test)$minor.class;#
+y.c45.b3.pred <- predict(c45.b3, X.test)$minor.class;#
+y.a1.pred <- predict(alpha.1, X.test)$minor.class;#
+y.a2.pred <- predict(alpha.2, X.test)$minor.class;#
+performance(prediction(y.c45.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.os.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.us.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.b1.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.b2.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.b3.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.a1.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.a2.pred, y.test),"auc")@y.values[[1]]#
+#
+performance(prediction(y.c45.b1.pred+y.c45.b2.pred+y.c45.b3.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.pred+y.a1.pred+y.a2.pred, y.test),"auc")@y.values[[1]]
+str(X)
+str(hypo)
+summary(hypo)
+library(ROCR);#
+library(corrplot);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(2);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+X.train.b1 <- X.train[bootstrap1.idx, ];#
+y.train.b1 <- y.train[bootstrap1.idx];#
+X.train.b2 <- X.train[bootstrap2.idx, ];#
+y.train.b2 <- y.train[bootstrap2.idx];#
+X.train.b3 <- X.train[bootstrap3.idx, ];#
+y.train.b3 <- y.train[bootstrap3.idx];#
+#
+option <- list(max.depth=4, min.n=10, class=c(1, 0));#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+c45.b1 <- atree(X.train.b1, y.train.b1, 1, option);#
+c45.b2 <- atree(X.train.b2, y.train.b2, 1, option);#
+c45.b3 <- atree(X.train.b3, y.train.b3, 1, option);#
+alpha.1 <- atree(X.train, y.train, 0.5, option);#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+y.c45.pred <- predict(c45, X.test)$minor.class;#
+y.c45.os.pred <- predict(c45.os, X.test)$minor.class;#
+y.c45.us.pred <- predict(c45.us, X.test)$minor.class;#
+y.c45.b1.pred <- predict(c45.b1, X.test)$minor.class;#
+y.c45.b2.pred <- predict(c45.b2, X.test)$minor.class;#
+y.c45.b3.pred <- predict(c45.b3, X.test)$minor.class;#
+y.a1.pred <- predict(alpha.1, X.test)$minor.class;#
+y.a2.pred <- predict(alpha.2, X.test)$minor.class;#
+y.c45.bagging.pred <- (y.c45.b1.pred+y.c45.b2.pred+y.c45.b3.pred)/3;#
+y.eat.pred <- (y.c45.pred+y.a1.pred+y.a2.pred)/3;#
+performance(prediction(y.c45.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.os.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.us.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.b1.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.b2.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.b3.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.a1.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.a2.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.bagging.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.eat.pred, y.test),"auc")@y.values[[1]]
+library(ROCR);#
+library(corrplot);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(2);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+X.train.b1 <- X.train[bootstrap1.idx, ];#
+y.train.b1 <- y.train[bootstrap1.idx];#
+X.train.b2 <- X.train[bootstrap2.idx, ];#
+y.train.b2 <- y.train[bootstrap2.idx];#
+X.train.b3 <- X.train[bootstrap3.idx, ];#
+y.train.b3 <- y.train[bootstrap3.idx];#
+#
+option <- list(max.depth=4, min.n=10, class=c(1, 0));#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+c45.b1 <- atree(X.train.b1, y.train.b1, 1, option);#
+c45.b2 <- atree(X.train.b2, y.train.b2, 1, option);#
+c45.b3 <- atree(X.train.b3, y.train.b3, 1, option);#
+alpha.1 <- atree(X.train, y.train, 0, option);#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+y.c45.pred <- predict(c45, X.test)$minor.class;#
+y.c45.os.pred <- predict(c45.os, X.test)$minor.class;#
+y.c45.us.pred <- predict(c45.us, X.test)$minor.class;#
+y.c45.b1.pred <- predict(c45.b1, X.test)$minor.class;#
+y.c45.b2.pred <- predict(c45.b2, X.test)$minor.class;#
+y.c45.b3.pred <- predict(c45.b3, X.test)$minor.class;#
+y.a1.pred <- predict(alpha.1, X.test)$minor.class;#
+y.a2.pred <- predict(alpha.2, X.test)$minor.class;#
+y.c45.bagging.pred <- (y.c45.b1.pred+y.c45.b2.pred+y.c45.b3.pred)/3;#
+y.eat.pred <- (y.c45.pred+y.a1.pred+y.a2.pred)/3;#
+performance(prediction(y.c45.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.os.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.us.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.b1.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.b2.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.b3.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.a1.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.a2.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.bagging.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.eat.pred, y.test),"auc")@y.values[[1]]
+y.c45.pred <- predict(c45, X.test)$minor.class;#
+y.c45.os.pred <- predict(c45.os, X.test)$minor.class;#
+y.c45.us.pred <- predict(c45.us, X.test)$minor.class;#
+y.c45.b1.pred <- predict(c45.b1, X.test)$minor.class;#
+y.c45.b2.pred <- predict(c45.b2, X.test)$minor.class;#
+y.c45.b3.pred <- predict(c45.b3, X.test)$minor.class;#
+y.a1.pred <- predict(alpha.1, X.test)$minor.class;#
+y.a2.pred <- predict(alpha.2, X.test)$minor.class;#
+y.c45.bagging.pred <- (y.c45.b1.pred+y.c45.b2.pred+y.c45.b3.pred)/3;#
+y.eat.pred <- (y.c45.pred+y.a1.pred+y.a2.pred)/3;#
+#
+pred.df <- data.frame(c45 = y.c45.pred,#
+					  	oversample = y.c45.os.pred,#
+						undersample = y.c45.us.pred,#
+						btstrp1 = y.c45.b1.pred,#
+						btstrp2 = y.c45.b2.pred,#
+						btstrp3 = y.c45.b3.pred,#
+						atree1 = y.a1.pred,#
+						atree2 = y.a2.pred,#
+						bagging = y.c45.bagging.pred,#
+						eat = y.eat.pred)
+corrplot.mixed(cor(pred.df),lower="number",upper="ellipse")
+pred.df <- data.frame(c45 = y.c45.pred,#
+					  	ovs = y.c45.os.pred,#
+						uds = y.c45.us.pred,#
+						btstrp1 = y.c45.b1.pred,#
+						btstrp2 = y.c45.b2.pred,#
+						btstrp3 = y.c45.b3.pred,#
+						atree1 = y.a1.pred,#
+						atree2 = y.a2.pred,#
+						bagging = y.c45.bagging.pred,#
+						eat = y.eat.pred)#
+#
+corrplot.mixed(cor(pred.df),lower="number",upper="ellipse")
+library(ROCR);#
+library(corrplot);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(2);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+X.train.b1 <- X.train[bootstrap1.idx, ];#
+y.train.b1 <- y.train[bootstrap1.idx];#
+X.train.b2 <- X.train[bootstrap2.idx, ];#
+y.train.b2 <- y.train[bootstrap2.idx];#
+X.train.b3 <- X.train[bootstrap3.idx, ];#
+y.train.b3 <- y.train[bootstrap3.idx];#
+#
+option <- list(max.depth=6, min.n=10, class=c(1, 0));#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+c45.b1 <- atree(X.train.b1, y.train.b1, 1, option);#
+c45.b2 <- atree(X.train.b2, y.train.b2, 1, option);#
+c45.b3 <- atree(X.train.b3, y.train.b3, 1, option);#
+alpha.1 <- atree(X.train, y.train, 0, option);#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+y.c45.pred <- predict(c45, X.test)$minor.class;#
+y.c45.os.pred <- predict(c45.os, X.test)$minor.class;#
+y.c45.us.pred <- predict(c45.us, X.test)$minor.class;#
+y.c45.b1.pred <- predict(c45.b1, X.test)$minor.class;#
+y.c45.b2.pred <- predict(c45.b2, X.test)$minor.class;#
+y.c45.b3.pred <- predict(c45.b3, X.test)$minor.class;#
+y.a1.pred <- predict(alpha.1, X.test)$minor.class;#
+y.a2.pred <- predict(alpha.2, X.test)$minor.class;#
+y.c45.bagging.pred <- (y.c45.b1.pred+y.c45.b2.pred+y.c45.b3.pred)/3;#
+y.eat.pred <- (y.c45.pred+y.a1.pred+y.a2.pred)/3;#
+#
+pred.df <- data.frame(c45 = y.c45.pred,#
+					  	ovs = y.c45.os.pred,#
+						uds = y.c45.us.pred,#
+						btstrp1 = y.c45.b1.pred,#
+						btstrp2 = y.c45.b2.pred,#
+						btstrp3 = y.c45.b3.pred,#
+						atree1 = y.a1.pred,#
+						atree2 = y.a2.pred,#
+						bagging = y.c45.bagging.pred,#
+						eat = y.eat.pred)#
+#
+corrplot.mixed(cor(pred.df),lower="number",upper="ellipse")#
+#
+performance(prediction(y.c45.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.os.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.us.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.b1.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.b2.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.b3.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.a1.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.a2.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.bagging.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.eat.pred, y.test),"auc")@y.values[[1]]
+library(ROCR);#
+library(corrplot);#
+source("atree/alphaTree.R");#
+#
+hypo <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hypo$binary.class <- 1-(hypo$class=="negative.");#
+hypo$class <- NULL;#
+hypo$TBGInd <- NULL;#
+hypo$TBG <- NULL;#
+hypo <- na.omit(hypo);#
+y <- hypo$binary.class;#
+hypo$binary.class <- NULL;#
+X <- model.matrix(~.-1, hypo);#
+#
+# calculating stats#
+set.seed(2);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+X.train.b1 <- X.train[bootstrap1.idx, ];#
+y.train.b1 <- y.train[bootstrap1.idx];#
+X.train.b2 <- X.train[bootstrap2.idx, ];#
+y.train.b2 <- y.train[bootstrap2.idx];#
+X.train.b3 <- X.train[bootstrap3.idx, ];#
+y.train.b3 <- y.train[bootstrap3.idx];#
+#
+option <- list(max.depth=10, min.n=10, class=c(1, 0));#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+c45.b1 <- atree(X.train.b1, y.train.b1, 1, option);#
+c45.b2 <- atree(X.train.b2, y.train.b2, 1, option);#
+c45.b3 <- atree(X.train.b3, y.train.b3, 1, option);#
+alpha.1 <- atree(X.train, y.train, 0, option);#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+y.c45.pred <- predict(c45, X.test)$minor.class;#
+y.c45.os.pred <- predict(c45.os, X.test)$minor.class;#
+y.c45.us.pred <- predict(c45.us, X.test)$minor.class;#
+y.c45.b1.pred <- predict(c45.b1, X.test)$minor.class;#
+y.c45.b2.pred <- predict(c45.b2, X.test)$minor.class;#
+y.c45.b3.pred <- predict(c45.b3, X.test)$minor.class;#
+y.a1.pred <- predict(alpha.1, X.test)$minor.class;#
+y.a2.pred <- predict(alpha.2, X.test)$minor.class;#
+y.c45.bagging.pred <- (y.c45.b1.pred+y.c45.b2.pred+y.c45.b3.pred)/3;#
+y.eat.pred <- (y.c45.pred+y.a1.pred+y.a2.pred)/3;#
+#
+pred.df <- data.frame(c45 = y.c45.pred,#
+					  	ovs = y.c45.os.pred,#
+						uds = y.c45.us.pred,#
+						btstrp1 = y.c45.b1.pred,#
+						btstrp2 = y.c45.b2.pred,#
+						btstrp3 = y.c45.b3.pred,#
+						atree1 = y.a1.pred,#
+						atree2 = y.a2.pred,#
+						bagging = y.c45.bagging.pred,#
+						eat = y.eat.pred)#
+corrplot.mixed(cor(pred.df),lower="number",upper="ellipse")#
+#
+performance(prediction(y.c45.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.os.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.us.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.b1.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.b2.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.b3.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.a1.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.a2.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.bagging.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.eat.pred, y.test),"auc")@y.values[[1]]
+pred.df <- data.frame(c45 = y.c45.pred,#
+					  	ovs = y.c45.os.pred,#
+						uds = y.c45.us.pred,#
+						btstrp1 = y.c45.b1.pred,#
+						btstrp2 = y.c45.b2.pred,#
+						btstrp3 = y.c45.b3.pred,#
+						atree1 = y.a1.pred,#
+						atree2 = y.a2.pred)#
+corrplot.mixed(cor(pred.df),lower="number",upper="ellipse")
+library(ROCR);#
+library(corrplot);#
+source("atree/alphaTree.R");#
+#
+hyper <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hyper$binary.class <- 1-(hyper$class=="negative.");#
+hyper$class <- NULL;#
+hyper$TBGInd <- NULL;#
+hyper$TBG <- NULL;#
+hyper <- na.omit(hyper);#
+y <- hyper$binary.class;#
+hyper$binary.class <- NULL;#
+X <- model.matrix(~.-1, hyper);#
+#
+# calculating stats#
+set.seed(2);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+X.train.b1 <- X.train[bootstrap1.idx, ];#
+y.train.b1 <- y.train[bootstrap1.idx];#
+X.train.b2 <- X.train[bootstrap2.idx, ];#
+y.train.b2 <- y.train[bootstrap2.idx];#
+X.train.b3 <- X.train[bootstrap3.idx, ];#
+y.train.b3 <- y.train[bootstrap3.idx];#
+#
+option <- list(max.depth=10, min.n=10, class=c(1, 0));#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+c45.b1 <- atree(X.train.b1, y.train.b1, 1, option);#
+c45.b2 <- atree(X.train.b2, y.train.b2, 1, option);#
+c45.b3 <- atree(X.train.b3, y.train.b3, 1, option);#
+alpha.1 <- atree(X.train, y.train, 0, option);#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+y.c45.pred <- predict(c45, X.test)$minor.class;#
+y.c45.os.pred <- predict(c45.os, X.test)$minor.class;#
+y.c45.us.pred <- predict(c45.us, X.test)$minor.class;#
+y.c45.b1.pred <- predict(c45.b1, X.test)$minor.class;#
+y.c45.b2.pred <- predict(c45.b2, X.test)$minor.class;#
+y.c45.b3.pred <- predict(c45.b3, X.test)$minor.class;#
+y.a1.pred <- predict(alpha.1, X.test)$minor.class;#
+y.a2.pred <- predict(alpha.2, X.test)$minor.class;#
+y.c45.bagging.pred <- (y.c45.b1.pred+y.c45.b2.pred+y.c45.b3.pred)/3;#
+y.eat.pred <- (y.c45.pred+y.a1.pred+y.a2.pred)/3;#
+#
+pred.df <- data.frame(c45 = y.c45.pred,#
+					  	ovs = y.c45.os.pred,#
+						uds = y.c45.us.pred,#
+						btstrp1 = y.c45.b1.pred,#
+						btstrp2 = y.c45.b2.pred,#
+						btstrp3 = y.c45.b3.pred,#
+						atree1 = y.a1.pred,#
+						atree2 = y.a2.pred)#
+corrplot.mixed(cor(pred.df),lower="number",upper="ellipse")#
+#
+performance(prediction(y.c45.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.os.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.us.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.b1.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.b2.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.b3.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.a1.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.a2.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.bagging.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.eat.pred, y.test),"auc")@y.values[[1]]
+library(ROCR);#
+library(corrplot);#
+source("atree/alphaTree.R");#
+#
+hyper <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hyper$binary.class <- 1-(hyper$class=="negative.");#
+hyper$class <- NULL;#
+hyper$TBGInd <- NULL;#
+hyper$TBG <- NULL;#
+hyper <- na.omit(hyper);#
+y <- hyper$binary.class;#
+hyper$binary.class <- NULL;#
+X <- model.matrix(~.-1, hyper);#
+#
+# calculating stats#
+set.seed(2);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+X.train.b1 <- X.train[bootstrap1.idx, ];#
+y.train.b1 <- y.train[bootstrap1.idx];#
+X.train.b2 <- X.train[bootstrap2.idx, ];#
+y.train.b2 <- y.train[bootstrap2.idx];#
+X.train.b3 <- X.train[bootstrap3.idx, ];#
+y.train.b3 <- y.train[bootstrap3.idx];#
+#
+option <- list(max.depth=6, min.n=10, class=c(1, 0));#
+#
+c45 <- atree(X.train, y.train, 1, option);#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+c45.b1 <- atree(X.train.b1, y.train.b1, 1, option);#
+c45.b2 <- atree(X.train.b2, y.train.b2, 1, option);#
+c45.b3 <- atree(X.train.b3, y.train.b3, 1, option);#
+alpha.1 <- atree(X.train, y.train, 0, option);#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+y.c45.pred <- predict(c45, X.test)$minor.class;#
+y.c45.os.pred <- predict(c45.os, X.test)$minor.class;#
+y.c45.us.pred <- predict(c45.us, X.test)$minor.class;#
+y.c45.b1.pred <- predict(c45.b1, X.test)$minor.class;#
+y.c45.b2.pred <- predict(c45.b2, X.test)$minor.class;#
+y.c45.b3.pred <- predict(c45.b3, X.test)$minor.class;#
+y.a1.pred <- predict(alpha.1, X.test)$minor.class;#
+y.a2.pred <- predict(alpha.2, X.test)$minor.class;#
+y.c45.bagging.pred <- (y.c45.b1.pred+y.c45.b2.pred+y.c45.b3.pred)/3;#
+y.eat.pred <- (y.c45.pred+y.a1.pred+y.a2.pred)/3;#
+#
+pred.df <- data.frame(c45 = y.c45.pred,#
+					  	ovs = y.c45.os.pred,#
+						uds = y.c45.us.pred,#
+						btstrp1 = y.c45.b1.pred,#
+						btstrp2 = y.c45.b2.pred,#
+						btstrp3 = y.c45.b3.pred,#
+						atree1 = y.a1.pred,#
+						atree2 = y.a2.pred)#
+corrplot.mixed(cor(pred.df),lower="number",upper="ellipse")#
+#
+performance(prediction(y.c45.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.os.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.us.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.b1.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.b2.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.b3.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.a1.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.a2.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.c45.bagging.pred, y.test),"auc")@y.values[[1]]#
+performance(prediction(y.eat.pred, y.test),"auc")@y.values[[1]]
+alpha.2
+c45
+plot.df <- NULL;#
+roc <- performance(prediction(y.c45.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="c45"));#
+roc <- performance(prediction(y.c45.os.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="oversample"));#
+roc <- performance(prediction(y.c45.us.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="undersample"));#
+roc <- performance(prediction(y.a1.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="alpha=0"));#
+roc <- performance(prediction(y.a2.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="alpha=1"));#
+roc <- performance(prediction(y.c45.bagging.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="bagging"));#
+roc <- performance(prediction(y.eat.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="eat"));#
+#
+ggplot(plot.df, aes(x=fpr, y=tpr, colour=model)) + geom_line()
+library(ggplot2)
+plot.df <- NULL;#
+roc <- performance(prediction(y.c45.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="c45"));#
+roc <- performance(prediction(y.c45.os.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="oversample"));#
+roc <- performance(prediction(y.c45.us.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="undersample"));#
+roc <- performance(prediction(y.a1.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="alpha=0"));#
+roc <- performance(prediction(y.a2.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="alpha=1"));#
+roc <- performance(prediction(y.c45.bagging.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="bagging"));#
+roc <- performance(prediction(y.eat.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="eat"));#
+#
+ggplot(plot.df, aes(x=fpr, y=tpr, colour=model)) + geom_line()
+ggplot(plot.df, aes(x=fpr, y=tpr, colour=model, linetype=model)) + #
+geom_line() + #
+theme_bw()
+plot.df <- NULL;#
+roc <- performance(prediction(y.c45.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="c45"));#
+roc <- performance(prediction(y.c45.os.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="oversample"));#
+roc <- performance(prediction(y.c45.us.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="undersample"));#
+roc <- performance(prediction(y.a1.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="bagging"));#
+roc <- performance(prediction(y.eat.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="eat"));#
+#
+ggplot(plot.df, aes(x=fpr, y=tpr, colour=model, linetype=model)) + #
+geom_line() + #
+theme_bw()
+ggplot(plot.df, aes(x=fpr, y=tpr, colour=model)) + #
+geom_line() + #
+theme_bw()
+ggplot(plot.df, aes(x=fpr, y=tpr, colour=model)) + #
+geom_line() + #
+theme_bw() + #
+coord_cartesian(xlim=c(0,0.25), ylim=c(0.5,1.0))
+ggplot(plot.df, aes(x=fpr, y=tpr, colour=model)) + #
+geom_line() + #
+theme_bw() + #
+coord_cartesian(xlim=c(-0.1,0.25), ylim=c(0.5,1.1))
+ggplot(plot.df, aes(x=fpr, y=tpr, colour=model)) + #
+geom_line() + #
+theme_bw();#
+ggsave("pdfs/allhyper_roc.pdf",width=4,height=3)
+ggsave("pdfs/allhyper_roc.pdf",width=5,height=3)
+ggplot(plot.df, aes(x=fpr, y=tpr, colour=model)) + #
+geom_line() + #
+theme_bw() + #
+coord_cartesian(xlim=c(-0.1,0.25), ylim=c(0.5,1.1));#
+ggsave("pdfs/allhyper_roc_zoomed.pdf",width=5,height=3);
+library(ROCR);#
+library(corrplot);#
+source("atree/alphaTree.R");#
+#
+hyper <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hyper$binary.class <- 1-(hyper$class=="negative.");#
+hyper$class <- NULL;#
+hyper$TBGInd <- NULL;#
+hyper$TBG <- NULL;#
+hyper <- na.omit(hyper);#
+y <- hyper$binary.class;#
+hyper$binary.class <- NULL;#
+X <- model.matrix(~.-1, hyper);#
+#
+# calculating stats#
+set.seed(2);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+# create training datasets#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+X.train.b1 <- X.train[bootstrap1.idx, ];#
+y.train.b1 <- y.train[bootstrap1.idx];#
+X.train.b2 <- X.train[bootstrap2.idx, ];#
+y.train.b2 <- y.train[bootstrap2.idx];#
+X.train.b3 <- X.train[bootstrap3.idx, ];#
+y.train.b3 <- y.train[bootstrap3.idx];#
+#
+# decisino tree options#
+option <- list(max.depth=10, min.n=10, class=c(1, 0));#
+#
+# build decision trees#
+c45 <- atree(X.train, y.train, 1, option);#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+c45.b1 <- atree(X.train.b1, y.train.b1, 1, option);#
+c45.b2 <- atree(X.train.b2, y.train.b2, 1, option);#
+c45.b3 <- atree(X.train.b3, y.train.b3, 1, option);#
+alpha.1 <- atree(X.train, y.train, 0, option);#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+#
+# predict#
+y.c45.pred <- predict(c45, X.test)$minor.class;#
+y.c45.os.pred <- predict(c45.os, X.test)$minor.class;#
+y.c45.us.pred <- predict(c45.us, X.test)$minor.class;#
+y.c45.b1.pred <- predict(c45.b1, X.test)$minor.class;#
+y.c45.b2.pred <- predict(c45.b2, X.test)$minor.class;#
+y.c45.b3.pred <- predict(c45.b3, X.test)$minor.class;#
+y.a1.pred <- predict(alpha.1, X.test)$minor.class;#
+y.a2.pred <- predict(alpha.2, X.test)$minor.class;#
+y.c45.bagging.pred <- (y.c45.b1.pred+y.c45.b2.pred+y.c45.b3.pred)/3;#
+y.eat.pred <- (y.c45.pred+y.a1.pred+y.a2.pred)/3;#
+#
+# check the correlation among decision trees#
+pred.df <- data.frame(c45 = y.c45.pred,#
+					  	ovs = y.c45.os.pred,#
+						uds = y.c45.us.pred,#
+						btstrp1 = y.c45.b1.pred,#
+						btstrp2 = y.c45.b2.pred,#
+						btstrp3 = y.c45.b3.pred,#
+						atree1 = y.a1.pred,#
+						atree2 = y.a2.pred)#
+corrplot.mixed(cor(pred.df),lower="number",upper="ellipse");#
+# check AUROC values #
+performance(prediction(y.c45.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.c45.os.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.c45.us.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.c45.b1.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.c45.b2.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.c45.b3.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.a1.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.a2.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.c45.bagging.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.eat.pred, y.test),"auc")@y.values[[1]];#
+#
+# plot ROC curves#
+plot.df <- NULL;#
+roc <- performance(prediction(y.c45.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="c45"));#
+roc <- performance(prediction(y.c45.os.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="oversample"));#
+roc <- performance(prediction(y.c45.us.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="undersample"));#
+roc <- performance(prediction(y.a1.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="bagging"));#
+roc <- performance(prediction(y.eat.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="eat"));#
+#
+ggplot(plot.df, aes(x=fpr, y=tpr, colour=model)) + #
+geom_line() + #
+theme_bw();#
+ggsave("pdfs/allhyper_roc.pdf",width=5,height=3);#
+#
+ggplot(plot.df, aes(x=fpr, y=tpr, colour=model)) + #
+geom_line() + #
+theme_bw() + #
+coord_cartesian(xlim=c(-0.1,0.25), ylim=c(0.5,1.1));#
+ggsave("pdfs/allhyper_roc_zoomed.pdf",width=5,height=3);
+library(ROCR);#
+library(corrplot);#
+source("atree/alphaTree.R");#
+#
+hyper <- read.csv("data/allhyper.data")
+summary(hyper)
+library(ROCR);#
+library(corrplot);#
+source("atree/alphaTree.R");#
+#
+hyper <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hyper$binary.class <- 1-(hyper$class=="negative.");#
+hyper$class <- NULL;#
+hyper$TBGInd <- NULL;#
+hyper$TBG <- NULL;#
+hyper <- na.omit(hyper);#
+y <- hyper$binary.class;#
+hyper$binary.class <- NULL;#
+X <- model.matrix(~.-1, hyper);#
+#
+# calculating stats#
+set.seed(2);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx), replace=TRUE));#
+#
+# create training datasets#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+X.train.b1 <- X.train[bootstrap1.idx, ];#
+y.train.b1 <- y.train[bootstrap1.idx];#
+X.train.b2 <- X.train[bootstrap2.idx, ];#
+y.train.b2 <- y.train[bootstrap2.idx];#
+X.train.b3 <- X.train[bootstrap3.idx, ];#
+y.train.b3 <- y.train[bootstrap3.idx];#
+#
+# decisino tree options#
+option <- list(max.depth=10, min.n=10, class=c(1, 0));#
+#
+# build decision trees#
+c45 <- atree(X.train, y.train, 1, option);#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+c45.b1 <- atree(X.train.b1, y.train.b1, 1, option);#
+c45.b2 <- atree(X.train.b2, y.train.b2, 1, option);#
+c45.b3 <- atree(X.train.b3, y.train.b3, 1, option);#
+alpha.1 <- atree(X.train, y.train, 0, option);#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+#
+# predict#
+y.c45.pred <- predict(c45, X.test)$minor.class;#
+y.c45.os.pred <- predict(c45.os, X.test)$minor.class;#
+y.c45.us.pred <- predict(c45.us, X.test)$minor.class;#
+y.c45.b1.pred <- predict(c45.b1, X.test)$minor.class;#
+y.c45.b2.pred <- predict(c45.b2, X.test)$minor.class;#
+y.c45.b3.pred <- predict(c45.b3, X.test)$minor.class;#
+y.a1.pred <- predict(alpha.1, X.test)$minor.class;#
+y.a2.pred <- predict(alpha.2, X.test)$minor.class;#
+y.c45.bagging.pred <- (y.c45.b1.pred+y.c45.b2.pred+y.c45.b3.pred)/3;#
+y.eat.pred <- (y.c45.pred+y.a1.pred+y.a2.pred)/3;#
+#
+# check the correlation among decision trees#
+pred.df <- data.frame(c45 = y.c45.pred,#
+					  	ovs = y.c45.os.pred,#
+						uds = y.c45.us.pred,#
+						btstrp1 = y.c45.b1.pred,#
+						btstrp2 = y.c45.b2.pred,#
+						btstrp3 = y.c45.b3.pred,#
+						atree1 = y.a1.pred,#
+						atree2 = y.a2.pred)#
+corrplot.mixed(cor(pred.df),lower="number",upper="ellipse");#
+# check AUROC values #
+performance(prediction(y.c45.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.c45.os.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.c45.us.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.c45.b1.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.c45.b2.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.c45.b3.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.a1.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.a2.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.c45.bagging.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.eat.pred, y.test),"auc")@y.values[[1]];#
+#
+# plot ROC curves#
+plot.df <- NULL;#
+roc <- performance(prediction(y.c45.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="c45"));#
+roc <- performance(prediction(y.c45.os.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="oversample"));#
+roc <- performance(prediction(y.c45.us.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="undersample"));#
+roc <- performance(prediction(y.a1.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="bagging"));#
+roc <- performance(prediction(y.eat.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="eat"));#
+#
+ggplot(plot.df, aes(x=fpr, y=tpr, colour=model)) + #
+geom_line() + #
+theme_bw();#
+ggsave("pdfs/allhyper_roc.pdf",width=5,height=3);#
+#
+ggplot(plot.df, aes(x=fpr, y=tpr, colour=model)) + #
+geom_line() + #
+theme_bw() + #
+coord_cartesian(xlim=c(-0.1,0.25), ylim=c(0.5,1.1));#
+ggsave("pdfs/allhyper_roc_zoomed.pdf",width=5,height=3);
+corrplot.mixed(cor(pred.df),lower="number",upper="ellipse");
+library(ROCR);#
+library(corrplot);#
+source("atree/alphaTree.R");#
+#
+hyper <- read.csv("data/allhyper.data")#
+#
+# data preprocessing#
+hyper$binary.class <- 1-(hyper$class=="negative.");#
+hyper$class <- NULL;#
+hyper$TBGInd <- NULL;#
+hyper$TBG <- NULL;#
+hyper <- na.omit(hyper);#
+y <- hyper$binary.class;#
+hyper$binary.class <- NULL;#
+X <- model.matrix(~.-1, hyper);#
+#
+# calculating stats#
+set.seed(2);#
+n <- length(y);#
+random.idx <- sample(1:n, n);#
+# 80/20 train/test split#
+train.idx <- random.idx[1:(n/2)];#
+test.idx <- random.idx[(n/2+1):n];#
+X.train <- X[train.idx, ];#
+y.train <- y[train.idx];#
+X.test <- X[test.idx, ];#
+y.test <- y[test.idx];#
+n.train <- length(y.train);#
+pos.train.idx <- which(y.train==1);#
+neg.train.idx <- which(y.train==0);#
+bootstrap1.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap2.idx <- sample(1:n.train, n.train, replace=TRUE);#
+bootstrap3.idx <- sample(1:n.train, n.train, replace=TRUE);#
+oversample.idx <- c(neg.train.idx, sample(pos.train.idx, length(neg.train.idx), replace=TRUE));#
+undersample.idx <- c(pos.train.idx, sample(neg.train.idx, length(pos.train.idx)));#
+#
+# create training datasets#
+X.train.os <- X.train[oversample.idx, ];#
+y.train.os <- y.train[oversample.idx];#
+X.train.us <- X.train[undersample.idx, ];#
+y.train.us <- y.train[undersample.idx];#
+X.train.b1 <- X.train[bootstrap1.idx, ];#
+y.train.b1 <- y.train[bootstrap1.idx];#
+X.train.b2 <- X.train[bootstrap2.idx, ];#
+y.train.b2 <- y.train[bootstrap2.idx];#
+X.train.b3 <- X.train[bootstrap3.idx, ];#
+y.train.b3 <- y.train[bootstrap3.idx];#
+#
+# decisino tree options#
+option <- list(max.depth=10, min.n=3, class=c(1, 0));#
+#
+# build decision trees#
+c45 <- atree(X.train, y.train, 1, option);#
+c45.os <- atree(X.train.os, y.train.os, 1, option);#
+c45.us <- atree(X.train.us, y.train.us, 1, option);#
+c45.b1 <- atree(X.train.b1, y.train.b1, 1, option);#
+c45.b2 <- atree(X.train.b2, y.train.b2, 1, option);#
+c45.b3 <- atree(X.train.b3, y.train.b3, 1, option);#
+alpha.1 <- atree(X.train, y.train, 0, option);#
+alpha.2 <- atree(X.train, y.train, 2, option);#
+#
+# predict#
+y.c45.pred <- predict(c45, X.test)$minor.class;#
+y.c45.os.pred <- predict(c45.os, X.test)$minor.class;#
+y.c45.us.pred <- predict(c45.us, X.test)$minor.class;#
+y.c45.b1.pred <- predict(c45.b1, X.test)$minor.class;#
+y.c45.b2.pred <- predict(c45.b2, X.test)$minor.class;#
+y.c45.b3.pred <- predict(c45.b3, X.test)$minor.class;#
+y.a1.pred <- predict(alpha.1, X.test)$minor.class;#
+y.a2.pred <- predict(alpha.2, X.test)$minor.class;#
+y.c45.bagging.pred <- (y.c45.b1.pred+y.c45.b2.pred+y.c45.b3.pred)/3;#
+y.eat.pred <- (y.c45.pred+y.a1.pred+y.a2.pred)/3;#
+#
+# check the correlation among decision trees#
+pred.df <- data.frame(c45 = y.c45.pred,#
+					  	ovs = y.c45.os.pred,#
+						uds = y.c45.us.pred,#
+						btstrp1 = y.c45.b1.pred,#
+						btstrp2 = y.c45.b2.pred,#
+						btstrp3 = y.c45.b3.pred,#
+						atree1 = y.a1.pred,#
+						atree2 = y.a2.pred)#
+corrplot.mixed(cor(pred.df),lower="number",upper="ellipse");#
+# check AUROC values #
+performance(prediction(y.c45.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.c45.os.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.c45.us.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.c45.b1.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.c45.b2.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.c45.b3.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.a1.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.a2.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.c45.bagging.pred, y.test),"auc")@y.values[[1]];#
+performance(prediction(y.eat.pred, y.test),"auc")@y.values[[1]];#
+#
+# plot ROC curves#
+plot.df <- NULL;#
+roc <- performance(prediction(y.c45.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="c45"));#
+roc <- performance(prediction(y.c45.os.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="oversample"));#
+roc <- performance(prediction(y.c45.us.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="undersample"));#
+roc <- performance(prediction(y.a1.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="bagging"));#
+roc <- performance(prediction(y.eat.pred, y.test),"tpr", "fpr");#
+plot.df <- rbind(plot.df, data.frame(fpr = roc@x.values[[1]], tpr = roc@y.values[[1]], model="eat"));#
+#
+ggplot(plot.df, aes(x=fpr, y=tpr, colour=model)) + #
+geom_line() + #
+theme_bw();#
+ggsave("pdfs/allhyper_roc.pdf",width=5,height=3);#
+#
+ggplot(plot.df, aes(x=fpr, y=tpr, colour=model)) + #
+geom_line() + #
+theme_bw() + #
+coord_cartesian(xlim=c(-0.1,0.25), ylim=c(0.5,1.1));#
+ggsave("pdfs/allhyper_roc_zoomed.pdf",width=5,height=3);
+corrplot.mixed(cor(pred.df),lower="number",upper="ellipse");

@@ -11,7 +11,7 @@ colnames(pima) <- c("n.preg","plasma.glucose","diastolic.bp",
 y <- pima[,ncol(pima)]
 X <- pima[,1:(ncol(pima)-1)]
 
-option <- list(max.depth=2);
+option <- list(max.depth=4);
 atfit <- atree(X, y, 1, option)
 output.json(atfit);
 perf <- performance(prediction(predict(atfit, X)$minor.class, y),"tpr","fpr")
