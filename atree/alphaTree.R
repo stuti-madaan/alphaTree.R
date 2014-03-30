@@ -300,7 +300,11 @@ construct.jsontree <- function(ruma, cid){
 	return(tree);
 }
 
-output.json <- function(obj, filename="d3js/alphaTree.js"){
+output.json <- function(obj, model.name="data"){
+	
+	index.file <- paste("d3js/",model.name,".html", sep="");
+	data.file <- paste("d3js/",model.name,".js", sep="");
+	
 	at <- obj$rules;
 	max.depth <- 0;
 	for(i in 1:nrow(at)){
@@ -319,8 +323,16 @@ output.json <- function(obj, filename="d3js/alphaTree.js"){
 		ruma[i,(length(elem)+2)] <- as.character(info);
 	}
 	tree <- construct.jsontree(ruma,1);
-	fout <- file(filename);
+	fout <- file(data.file);
 	writeLines(paste('var alphaTree=',toJSON(tree),';',sep=""), fout);
+	close(fout);
+
+	preamble <- '<head><meta http-equiv="Content-Type" content="text/html;charset=utf-8"><link type="text/css" rel="stylesheet" href="style.css"><script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.1/d3.js"></script><script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/d3/2.7.4/d3.layout.min.js"></script><script type="text/javascript" src="';
+	postamble <- '"></script></head><body><div id="body"><div id="footer">  Alpha Tree <div class="hint">maintained by Yubin Park (yubin.park@utexas.edu) <br> click or option-click to expand or collapse <br>  Original d3.js script from <br>http://mbostock.github.io/d3/talk/20111018/tree.html</div></div></div><script type="text/javascript" src="alphaTree.js"></script></body>'
+	
+	index.html <- paste(preamble, paste(model.name,'.js',sep=""),postamble, sep="");	
+	fout <- file(index.file);
+	writeLines(index.html, fout);
 	close(fout);
 
 }
